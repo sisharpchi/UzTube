@@ -5,14 +5,14 @@ namespace Domain.Entities;
 public class User
 {
     public long Id { get; set; }
-    public string FullName { get; set; } = null!;
-    public string Email { get; set; } = null!;
-    public string PasswordHash { get; set; } = null!;
+    public string FullName { get; set; }
+    public string Email { get; set; }
+    public string PasswordHash { get; set; }
     public string? ProfileImageUrl { get; set; }
     public DateTime CreatedAt { get; set; }
 
     public long RoleId { get; set; }
-    public Role Role { get; set; } = null!;
+    public Role Role { get; set; }
 
     public Channel Channel { get; set; } = null!;
     public ICollection<Comment> Comments { get; set; }
