@@ -12,5 +12,6 @@ public class CommentDto
 
     public long? ParentCommentId { get; set; }
     public int LikeCount { get; set; }
+    public bool IsLikedByCurrentUser { get; set; } // frontendda highlight qilish uchun
     public List<CommentDto> Replies { get; set; }
 }

@@ -9,4 +9,5 @@ public class SavedVideo
 
     public long VideoId { get; set; }
     public Video Video { get; set; } = null!;
+    public DateTime SavedAt { get; set; } = DateTime.UtcNow;
 }
