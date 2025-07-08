@@ -7,7 +7,6 @@ public class Channel
     public string? Description { get; set; }
 
     public long OwnerId { get; set; }
-    public User Owner { get; set; }
 
     public ICollection<Video> Videos { get; set; }
     public ICollection<Subscription> Subscribers { get; set; } 

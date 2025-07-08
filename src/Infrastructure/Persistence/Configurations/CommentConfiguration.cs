@@ -28,10 +28,10 @@ public class CommentConfiguration : IEntityTypeConfiguration<Comment>
         //    .OnDelete(DeleteBehavior.NoAction); //Restrict ❗ Prevent multiple cascade path
 
         // Comment ➝ User (N:1)
-        builder.HasOne(c => c.User)
-            .WithMany(u => u.Comments)
-            .HasForeignKey(c => c.UserId)
-            .OnDelete(DeleteBehavior.Restrict); // ❗ Prevent multiple cascade path
+        //builder.HasOne(c => c.User)
+        //    .WithMany(u => u.Comments)
+        //    .HasForeignKey(c => c.UserId)
+        //    .OnDelete(DeleteBehavior.Restrict); // ❗ Prevent multiple cascade path
 
         // Comment ➝ ParentComment (recursive self-reference)
         builder.HasOne(c => c.ParentComment)

@@ -28,9 +28,9 @@ public class VideoReportConfiguration : IEntityTypeConfiguration<VideoReport>
         //    .OnDelete(DeleteBehavior.Cascade); // Video o‘chsa, reportlar ham o‘chadi
 
         // VideoReport ➝ User (Reporter) (N:1)
-        builder.HasOne(vr => vr.Reporter)
-            .WithMany()
-            .HasForeignKey(vr => vr.ReporterId)
-            .OnDelete(DeleteBehavior.Cascade); // User o‘chsa, reportlar ham o‘chadi
+        //builder.HasOne(vr => vr.Reporter)
+        //    .WithMany()
+        //    .HasForeignKey(vr => vr.ReporterId)
+        //    .OnDelete(DeleteBehavior.Cascade); // User o‘chsa, reportlar ham o‘chadi
     }
 }

@@ -23,10 +23,10 @@ public class ChannelConfiguration : IEntityTypeConfiguration<Channel>
             .IsRequired(false);
 
         // Owner: Channel ➝ User (1:1)
-        builder.HasOne(c => c.Owner)
-            .WithOne(u => u.Channel)
-            .HasForeignKey<Channel>(c => c.OwnerId)
-            .OnDelete(DeleteBehavior.Cascade);
+        //builder.HasOne(c => c.Owner)
+        //    .WithOne(u => u.Channel)
+        //    .HasForeignKey<Channel>(c => c.OwnerId)
+        //    .OnDelete(DeleteBehavior.Cascade);
 
         // Videos: Channel ➝ Videos (1:N)
         builder.HasMany(c => c.Videos)

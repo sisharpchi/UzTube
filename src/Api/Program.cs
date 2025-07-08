@@ -1,7 +1,9 @@
 using Api.Configurations;
 using Api.Endpoints;
+using Application.Contracts.Repository;
 using Application.Contracts.Sevice;
 using Application.Services;
+using Infrastructure.Persistence.Repositories;
 using Microsoft.AspNetCore.Http.Features;
 
 namespace Api;
@@ -13,16 +15,19 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
 
         // Add services to the container.
-
         builder.Services.AddControllers();
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 
+        builder.ConfigureSerilog();
         builder.ConfigureDatabase();
+        builder.ConfigurationJwtAuth();
+        builder.ConfigureJwtSettings();
+        //builder.ConfigureSerilog();
+        builder.ConfigureDependecies();
 
         builder.Services.AddMegaIntegration(builder.Configuration);
-        builder.Services.AddScoped<IUploadService, UploadService>();
         builder.Services.Configure<FormOptions>(options =>
         {
             options.MultipartBodyLengthLimit = 500 * 1024 * 1024; // 500 MB
@@ -43,8 +48,10 @@ public class Program
 
         app.UseHttpsRedirection();
 
+        app.UseAuthentication();
         app.UseAuthorization();
 
+        app.MapAuthEndpoints();
         app.MapUploadEndpoints();
         app.MapControllers();
 

@@ -25,10 +25,10 @@ public class LikeDislikeConfiguration : IEntityTypeConfiguration<LikeDislike>
             .OnDelete(DeleteBehavior.NoAction); // 🔥 Eslatma: CASCADE emas, multiple cascade path oldini olish uchun
 
         // LikeDislike ➝ User (N:1)
-        builder.HasOne(ld => ld.User)
-            .WithMany(u => u.Likes)
-            .HasForeignKey(ld => ld.UserId)
-            .OnDelete(DeleteBehavior.NoAction); // 🔥 Bu ham CASCADE emas
+        //builder.HasOne(ld => ld.User)
+        //    .WithMany(u => u.Likes)
+        //    .HasForeignKey(ld => ld.UserId)
+        //    .OnDelete(DeleteBehavior.NoAction); // 🔥 Bu ham CASCADE emas
 
         // ❗ Shu bilan FOREIGN KEY multiple cascade path xatosi bo‘lmaydi
     }

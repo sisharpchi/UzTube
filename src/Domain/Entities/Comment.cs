@@ -10,7 +10,6 @@ public class Comment
     public Video Video { get; set; }
 
     public long UserId { get; set; }
-    public User User { get; set; }
 
     public long? ParentCommentId { get; set; }
     public Comment? ParentComment { get; set; }

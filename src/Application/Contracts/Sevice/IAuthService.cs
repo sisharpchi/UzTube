@@ -1,10 +1,15 @@
-﻿using Domain.Entities;
+﻿using Application.Dtos.User;
+using Domain.Entities;
 
 namespace Application.Contracts.SeviceContracts;
 
 public interface IAuthService
 {
-    Task<string> GenerateJwtTokenAsync(User user);
-    Task<bool> VerifyPasswordAsync(User user, string password);
-    Task<string> HashPasswordAsync(string password);
+    Task<long> SignUpUserAsync(UserRegisterDto userRegisterDto);
+    Task<UserLoginResponseDto> LoginUserAsync(UserLoginDto userLoginDto);
+    Task<UserLoginResponseDto> RefreshTokenAsync(RefreshRequestDto request);
+    Task EailCodeSender(string email);
+    Task LogOut(string token);
+    Task<bool> ConfirmCode(string userCode, string email);
+    Task<bool> ChangePasswordAsync(UserChangePasswordDto dto);
 }

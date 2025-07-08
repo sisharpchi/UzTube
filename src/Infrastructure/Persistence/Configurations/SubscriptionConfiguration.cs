@@ -15,10 +15,10 @@ public class SubscriptionConfiguration : IEntityTypeConfiguration<Subscription>
         builder.HasKey(s => s.Id);
 
         // Subscription ➝ Subscriber (User) (N:1)
-        builder.HasOne(s => s.Subscriber)
-            .WithMany(u => u.Subscriptions) // 👈 User entity’da ICollection<Subscription> Subscriptions bo‘lishi kerak
-            .HasForeignKey(s => s.SubscriberId)
-            .OnDelete(DeleteBehavior.Restrict); // ❗ Multiple cascade path'dan qochish
+        //builder.HasOne(s => s.Subscriber)
+        //    .WithMany(u => u.Subscriptions) // 👈 User entity’da ICollection<Subscription> Subscriptions bo‘lishi kerak
+        //    .HasForeignKey(s => s.SubscriberId)
+        //    .OnDelete(DeleteBehavior.Restrict); // ❗ Multiple cascade path'dan qochish
 
         // Subscription ➝ Channel (N:1)
         builder.HasOne(s => s.Channel)

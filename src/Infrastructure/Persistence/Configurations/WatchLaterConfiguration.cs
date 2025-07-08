@@ -12,10 +12,10 @@ public class WatchLaterConfiguration : IEntityTypeConfiguration<WatchLater>
 
         builder.HasKey(w => w.Id);
 
-        builder.HasOne(w => w.User)
-            .WithMany(u => u.WatchLaters)
-            .HasForeignKey(w => w.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
+        //builder.HasOne(w => w.User)
+        //    .WithMany(u => u.WatchLaters)
+        //    .HasForeignKey(w => w.UserId)
+        //    .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(w => w.Video)
             .WithMany() // Video tarafdan navigation bo'lmasa

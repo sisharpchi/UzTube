@@ -1,4 +1,6 @@
-﻿namespace Application.Dtos.Channel;
+﻿using Application.Dtos.Video;
+
+namespace Application.Dtos.Channel;
 
 public class ChannelWithVideosDto
 {

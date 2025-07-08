@@ -26,6 +26,11 @@ public class RoleConfiguration : IEntityTypeConfiguration<Role>
         builder.HasMany(r => r.Users)
             .WithOne(u => u.Role)
             .HasForeignKey(u => u.RoleId)
-            .OnDelete(DeleteBehavior.Cascade); // Har bir user o‘z role'iga bog‘langan
+            .OnDelete(DeleteBehavior.Restrict); // Har bir user o‘z role'iga bog‘langan
+
+        builder.HasData(
+            new Role { Id = 1, Name = "User" },
+            new Role { Id = 2, Name = "Admin" }
+        );
     }
 }

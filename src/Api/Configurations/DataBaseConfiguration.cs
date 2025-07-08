@@ -7,8 +7,13 @@ public static class DataBaseConfiguration
 {
     public static void ConfigureDatabase(this WebApplicationBuilder builder)
     {
-        var connectionString = builder.Configuration.GetConnectionString("DatabaseConnection");
+        var sqlConnection = builder.Configuration.GetConnectionString("SqlServerConnection");
+        var postgresConnection = builder.Configuration.GetConnectionString("PostgresConnection");
 
-        builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connectionString));
+        builder.Services.AddDbContext<AppDbContext>(options =>
+            options.UseSqlServer(sqlConnection));
+
+        builder.Services.AddDbContext<AuthDbContext>(options =>
+            options.UseNpgsql(postgresConnection));
     }
 }

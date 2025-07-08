@@ -1,4 +1,5 @@
 ﻿using Domain.Entities;
+using Infrastructure.Persistence.Configurations;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Persistence.MainDbContext;
@@ -7,8 +8,7 @@ public class AppDbContext : DbContext
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
-    public DbSet<User> Users { get; set; }
-    public DbSet<Role> Roles { get; set; }
+    // mssql
     public DbSet<Channel> Channels { get; set; }
     public DbSet<Video> Videos { get; set; }
     public DbSet<Comment> Comments { get; set; }
@@ -26,7 +26,22 @@ public class AppDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+        //modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+        modelBuilder.ApplyConfiguration(new ChannelConfiguration());
+        modelBuilder.ApplyConfiguration(new VideoConfiguration());
+        modelBuilder.ApplyConfiguration(new CommentConfiguration());
+        modelBuilder.ApplyConfiguration(new CommentLikeConfiguration());
+        modelBuilder.ApplyConfiguration(new LikeDislikeConfiguration());
+        modelBuilder.ApplyConfiguration(new SubscriptionConfiguration());
+        modelBuilder.ApplyConfiguration(new LikeDislikeConfiguration());
+        modelBuilder.ApplyConfiguration(new ViewHistoryConfiguration());
+        modelBuilder.ApplyConfiguration(new PlaylistConfiguration());
+        modelBuilder.ApplyConfiguration(new SavedVideoConfiguration());
+        modelBuilder.ApplyConfiguration(new WatchLaterConfiguration());
+        modelBuilder.ApplyConfiguration(new TagConfiguration());
+        modelBuilder.ApplyConfiguration(new VideoTagConfiguration());
+        modelBuilder.ApplyConfiguration(new VideoReportConfiguration());
+        modelBuilder.ApplyConfiguration(new NotificationConfiguration());
 
         base.OnModelCreating(modelBuilder);
     }

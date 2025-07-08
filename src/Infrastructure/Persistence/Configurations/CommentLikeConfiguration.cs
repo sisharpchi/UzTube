@@ -21,9 +21,9 @@ public class CommentLikeConfiguration : IEntityTypeConfiguration<CommentLike>
             .OnDelete(DeleteBehavior.Cascade); // Comment o‘chsa, like-lar ham o‘chadi
 
         // CommentLike ➝ User (N:1)
-        builder.HasOne(cl => cl.User)
-            .WithMany() // Userda alohida navigation yo‘q bo‘lsa
-            .HasForeignKey(cl => cl.UserId)
-            .OnDelete(DeleteBehavior.Restrict); // User o‘chsa, like-lar ham o‘chadi
+        //builder.HasOne(cl => cl.User)
+        //    .WithMany() // Userda alohida navigation yo‘q bo‘lsa
+        //    .HasForeignKey(cl => cl.UserId)
+        //    .OnDelete(DeleteBehavior.Restrict); // User o‘chsa, like-lar ham o‘chadi
     }
 }

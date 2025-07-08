@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace Infrastructure.Persistence.Migrations
+namespace Infrastructure.Persistence.Migrations.AppDb
 {
     [DbContext(typeof(AppDbContext))]
     partial class AppDbContextModelSnapshot : ModelSnapshot
@@ -42,9 +42,6 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OwnerId")
-                        .IsUnique();
-
                     b.ToTable("Channels", (string)null);
                 });
 
@@ -76,8 +73,6 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.HasIndex("ParentCommentId");
 
-                    b.HasIndex("UserId");
-
                     b.HasIndex("VideoId");
 
                     b.ToTable("Comments", (string)null);
@@ -101,8 +96,6 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.HasIndex("CommentId");
 
-                    b.HasIndex("UserId");
-
                     b.ToTable("CommentLikes", (string)null);
                 });
 
@@ -124,8 +117,6 @@ namespace Infrastructure.Persistence.Migrations
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("UserId");
 
                     b.HasIndex("VideoId");
 
@@ -155,8 +146,6 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
-
                     b.ToTable("Notifications", (string)null);
                 });
 
@@ -185,26 +174,6 @@ namespace Infrastructure.Persistence.Migrations
                     b.ToTable("Playlists", (string)null);
                 });
 
-            modelBuilder.Entity("Domain.Entities.Role", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Roles", (string)null);
-                });
-
             modelBuilder.Entity("Domain.Entities.SavedVideo", b =>
                 {
                     b.Property<long>("Id")
@@ -213,6 +182,9 @@ namespace Infrastructure.Persistence.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
+                    b.Property<DateTime>("SavedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<long>("UserId")
                         .HasColumnType("bigint");
 
@@ -220,8 +192,6 @@ namespace Infrastructure.Persistence.Migrations
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("UserId");
 
                     b.HasIndex("VideoId");
 
@@ -239,14 +209,15 @@ namespace Infrastructure.Persistence.Migrations
                     b.Property<long>("ChannelId")
                         .HasColumnType("bigint");
 
+                    b.Property<DateTime>("SubscribedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<long>("SubscriberId")
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ChannelId");
-
-                    b.HasIndex("SubscriberId");
 
                     b.ToTable("Subscriptions", (string)null);
                 });
@@ -266,48 +237,6 @@ namespace Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Tags", (string)null);
-                });
-
-            modelBuilder.Entity("Domain.Entities.User", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("FullName")
-                        .IsRequired()
-                        .HasMaxLength(90)
-                        .HasColumnType("nvarchar(90)");
-
-                    b.Property<string>("PasswordHash")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ProfileImageUrl")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<long>("RoleId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Email")
-                        .IsUnique();
-
-                    b.HasIndex("RoleId");
-
-                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.Video", b =>
@@ -379,8 +308,6 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ReporterId");
-
                     b.HasIndex("VideoId");
 
                     b.ToTable("VideoReports", (string)null);
@@ -423,8 +350,6 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
-
                     b.HasIndex("VideoId");
 
                     b.ToTable("ViewHistories", (string)null);
@@ -446,22 +371,9 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
-
                     b.HasIndex("VideoId");
 
                     b.ToTable("WatchLaters", (string)null);
-                });
-
-            modelBuilder.Entity("Domain.Entities.Channel", b =>
-                {
-                    b.HasOne("Domain.Entities.User", "Owner")
-                        .WithOne("Channel")
-                        .HasForeignKey("Domain.Entities.Channel", "OwnerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Owner");
                 });
 
             modelBuilder.Entity("Domain.Entities.Comment", b =>
@@ -471,12 +383,6 @@ namespace Infrastructure.Persistence.Migrations
                         .HasForeignKey("ParentCommentId")
                         .OnDelete(DeleteBehavior.NoAction);
 
-                    b.HasOne("Domain.Entities.User", "User")
-                        .WithMany("Comments")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Domain.Entities.Video", "Video")
                         .WithMany("Comments")
                         .HasForeignKey("VideoId")
@@ -484,8 +390,6 @@ namespace Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("ParentComment");
-
-                    b.Navigation("User");
 
                     b.Navigation("Video");
                 });
@@ -498,45 +402,18 @@ namespace Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Domain.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.Navigation("Comment");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Domain.Entities.LikeDislike", b =>
                 {
-                    b.HasOne("Domain.Entities.User", "User")
-                        .WithMany("Likes")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("Domain.Entities.Video", "Video")
                         .WithMany("Likes")
                         .HasForeignKey("VideoId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
-
-                    b.Navigation("User");
 
                     b.Navigation("Video");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Notification", b =>
-                {
-                    b.HasOne("Domain.Entities.User", "User")
-                        .WithMany("Notifications")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Domain.Entities.Playlist", b =>
@@ -552,19 +429,11 @@ namespace Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Domain.Entities.SavedVideo", b =>
                 {
-                    b.HasOne("Domain.Entities.User", "User")
-                        .WithMany("SavedVideos")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("Domain.Entities.Video", "Video")
                         .WithMany()
                         .HasForeignKey("VideoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("User");
 
                     b.Navigation("Video");
                 });
@@ -577,26 +446,7 @@ namespace Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Domain.Entities.User", "Subscriber")
-                        .WithMany("Subscriptions")
-                        .HasForeignKey("SubscriberId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.Navigation("Channel");
-
-                    b.Navigation("Subscriber");
-                });
-
-            modelBuilder.Entity("Domain.Entities.User", b =>
-                {
-                    b.HasOne("Domain.Entities.Role", "Role")
-                        .WithMany("Users")
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Role");
                 });
 
             modelBuilder.Entity("Domain.Entities.Video", b =>
@@ -610,7 +460,7 @@ namespace Infrastructure.Persistence.Migrations
                     b.HasOne("Domain.Entities.Playlist", "Playlist")
                         .WithMany("Videos")
                         .HasForeignKey("PlaylistId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Channel");
 
@@ -619,19 +469,11 @@ namespace Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Domain.Entities.VideoReport", b =>
                 {
-                    b.HasOne("Domain.Entities.User", "Reporter")
-                        .WithMany()
-                        .HasForeignKey("ReporterId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Domain.Entities.Video", "Video")
                         .WithMany("Reports")
                         .HasForeignKey("VideoId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.Navigation("Reporter");
 
                     b.Navigation("Video");
                 });
@@ -657,38 +499,22 @@ namespace Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Domain.Entities.ViewHistory", b =>
                 {
-                    b.HasOne("Domain.Entities.User", "User")
-                        .WithMany("ViewHistories")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Domain.Entities.Video", "Video")
                         .WithMany("ViewHistories")
                         .HasForeignKey("VideoId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("User");
-
                     b.Navigation("Video");
                 });
 
             modelBuilder.Entity("Domain.Entities.WatchLater", b =>
                 {
-                    b.HasOne("Domain.Entities.User", "User")
-                        .WithMany("WatchLaters")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Domain.Entities.Video", "Video")
                         .WithMany()
                         .HasForeignKey("VideoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("User");
 
                     b.Navigation("Video");
                 });
@@ -714,34 +540,9 @@ namespace Infrastructure.Persistence.Migrations
                     b.Navigation("Videos");
                 });
 
-            modelBuilder.Entity("Domain.Entities.Role", b =>
-                {
-                    b.Navigation("Users");
-                });
-
             modelBuilder.Entity("Domain.Entities.Tag", b =>
                 {
                     b.Navigation("VideoTags");
-                });
-
-            modelBuilder.Entity("Domain.Entities.User", b =>
-                {
-                    b.Navigation("Channel")
-                        .IsRequired();
-
-                    b.Navigation("Comments");
-
-                    b.Navigation("Likes");
-
-                    b.Navigation("Notifications");
-
-                    b.Navigation("SavedVideos");
-
-                    b.Navigation("Subscriptions");
-
-                    b.Navigation("ViewHistories");
-
-                    b.Navigation("WatchLaters");
                 });
 
             modelBuilder.Entity("Domain.Entities.Video", b =>

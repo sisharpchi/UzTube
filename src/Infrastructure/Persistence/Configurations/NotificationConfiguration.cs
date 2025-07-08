@@ -26,9 +26,9 @@ public class NotificationConfiguration : IEntityTypeConfiguration<Notification>
             .IsRequired();
 
         // Notification ➝ User (N:1)
-        builder.HasOne(n => n.User)
-            .WithMany(u => u.Notifications) // 👈 Siz `User` entity’ga `ICollection<Notification> Notifications` qo‘shgan bo‘lishingiz kerak
-            .HasForeignKey(n => n.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
+        //builder.HasOne(n => n.User)
+        //    .WithMany(u => u.Notifications) // 👈 Siz `User` entity’ga `ICollection<Notification> Notifications` qo‘shgan bo‘lishingiz kerak
+        //    .HasForeignKey(n => n.UserId)
+        //    .OnDelete(DeleteBehavior.Cascade);
     }
 }

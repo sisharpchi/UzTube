@@ -28,9 +28,9 @@ public class ViewHistoryConfiguration : IEntityTypeConfiguration<ViewHistory>
         //    .OnDelete(DeleteBehavior.Cascade); // Video o‘chsa, viewlar ham o‘chadi
 
         // ViewHistory ➝ User (N:1)
-        builder.HasOne(vh => vh.User)
-            .WithMany(u => u.ViewHistories)
-            .HasForeignKey(vh => vh.UserId)
-            .OnDelete(DeleteBehavior.Cascade); // User o‘chsa, viewlar ham o‘chadi
+        //builder.HasOne(vh => vh.User)
+        //    .WithMany(u => u.ViewHistories)
+        //    .HasForeignKey(vh => vh.UserId)
+        //    .OnDelete(DeleteBehavior.Cascade); // User o‘chsa, viewlar ham o‘chadi
     }
 }

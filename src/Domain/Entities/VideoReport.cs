@@ -10,5 +10,4 @@ public class VideoReport
     public Video Video { get; set; } = null!;
 
     public long ReporterId { get; set; }
-    public User Reporter { get; set; } = null!;
 }

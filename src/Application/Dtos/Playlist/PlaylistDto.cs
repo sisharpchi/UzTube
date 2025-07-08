@@ -1,4 +1,6 @@
-﻿namespace Application.Dtos.Playlist;
+﻿using Application.Dtos.Video;
+
+namespace Application.Dtos.Playlist;
 
 public class PlaylistDto
 {

@@ -14,11 +14,23 @@ public class ViewHistoryRepository(AppDbContext appDbContext) : IViewHistoryRepo
         return history.Id;
     }
 
+    public async Task<ViewHistory> GetAsync(long userId, long videoId)
+    {
+        return await appDbContext.ViewHistories
+            .FirstOrDefaultAsync(v => v.UserId == userId && v.VideoId == videoId);
+    }
+
     public async Task<IEnumerable<ViewHistory>> GetByUserIdAsync(long userId)
     {
         return await appDbContext.ViewHistories
             .Where(x => x.UserId == userId)
             .OrderByDescending(x => x.WatchedAt)
             .ToListAsync();
+    }
+
+    public async Task UpdateAsync(ViewHistory history)
+    {
+        appDbContext.ViewHistories.Update(history);
+        await appDbContext.SaveChangesAsync();
     }
 }

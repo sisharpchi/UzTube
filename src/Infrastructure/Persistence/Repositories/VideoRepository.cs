@@ -19,8 +19,19 @@ public class VideoRepository(AppDbContext appDbContext) : IVideoRepository
         appDbContext.Videos.Remove(video!);
         await appDbContext.SaveChangesAsync();
     }
-    public async Task<IEnumerable<Video>> GetAllAsync() => await appDbContext.Videos.AsNoTracking().ToListAsync();
-    public async Task<Video?> GetByIdAsync(long id) => await appDbContext.Videos.FindAsync(id);
+    public async Task<IEnumerable<Video>> GetAllAsync() => await appDbContext.Videos
+        .Include(v => v.Channel)
+        .Include(v => v.Playlist)
+        .Include(v => v.Likes)
+        .Include(v => v.ViewHistories)
+        .AsNoTracking().ToListAsync();
+    public async Task<Video?> GetByIdAsync(long id) => await appDbContext.Videos
+        .Include(v => v.Channel)
+        .Include(v => v.Playlist)
+        .Include(v => v.Likes)
+        .Include(v => v.ViewHistories)
+        .AsNoTracking()
+        .FirstAsync(v => v.Id == id);
     public async Task<IEnumerable<Video>> GetByChannelIdAsync(long channelId) => await appDbContext.Videos.Where(v => v.ChannelId == channelId).AsNoTracking().ToListAsync();
     public async Task<IEnumerable<Video>> SearchAsync(string query) => await appDbContext.Videos.Where(v => v.Title.Contains(query)).AsNoTracking().ToListAsync();
     public async Task<IEnumerable<Video>> FilterAsync(string? tag, long? channelId, string? duration, string? sort)
