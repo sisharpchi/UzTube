@@ -47,21 +47,47 @@ public class VideoService : IVideoService
         return true;
     }
 
-
-    public async Task DeleteFileAsync(string nodeId)
+    public async Task DeleteFileAsync(long userId, string nodeId)
     {
+        var video = await videoRepository.GetByNodeAndOwnerId(userId, nodeId);
+        if (video is null)
+            throw new InvalidOperationException("Node topilmadi yoki sizga tegishli emas.");
+
         var nodes = megaApiClient.GetNodes();
-        var node = nodes.FirstOrDefault(x => x.Id == nodeId);
+        var node = nodes.FirstOrDefault(x => x.Id == video.CloudPublicId);
 
         if (node is null)
             throw new InvalidOperationException("Node topilmadi yoki sizga tegishli emas.");
 
-        megaApiClient.Delete(node, moveToTrash: false);
+        megaApiClient.Delete(node, moveToTrash: true);
     }
 
-    public Task<List<VideoListItemDto>> GetByChannelAsync(long channelId)
+    public async Task<List<VideoDto>> GetAllVideosAsync()
     {
-        throw new NotImplementedException();
+        var videos = await videoRepository.GetAllAsync();
+        return videos.Select(v => ConvertToVideoDto(v)).ToList();
+    }
+
+    public async Task<List<VideoListItemDto>> GetByChannelAsync(long channelId)
+    {
+        var channel = await channelRepository.GetByIdAsync(channelId);
+        if (channel == null || channel.Videos == null)
+            return new List<VideoListItemDto>();
+
+        var videos = channel.Videos;
+
+        var result = videos.Select(video => new VideoListItemDto
+        {
+            Id = video.Id,
+            Title = video.Title,
+            ThumbnailUrl = video.ThumbnailUrl,
+            Duration = video.Duration,
+            ChannelName = channel.Name,
+            UploadedAt = video.UploadedAt,
+            ViewCount = video.ViewHistories?.Count ?? 0
+        }).ToList();
+
+        return result;
     }
 
     public async Task<VideoDto> GetByIdAsync(long videoId)
@@ -79,9 +105,24 @@ public class VideoService : IVideoService
         throw new NotImplementedException();
     }
 
-    public Task<List<VideoListItemDto>> GetByUserAsync(long userId)
+    public async Task<List<VideoListItemDto>> GetByUserAsync(long userId)
     {
-        throw new NotImplementedException();
+        var channel = await channelRepository.GetByOwnerIdAsync(userId);
+        if (channel == null || channel.Videos == null)
+            return new List<VideoListItemDto>();
+
+        var result = channel.Videos.Select(v => new VideoListItemDto
+        {
+            Id = v.Id,
+            Title = v.Title,
+            ThumbnailUrl = v.ThumbnailUrl,
+            Duration = v.Duration,
+            ChannelName = channel.Name,
+            UploadedAt = v.UploadedAt,
+            ViewCount = v.ViewHistories?.Count ?? 0,
+        }).ToList();
+
+        return result;
     }
 
     public Task<List<VideoListItemDto>> GetTrendingAsync(int count = 20)
@@ -96,29 +137,35 @@ public class VideoService : IVideoService
 
     public async Task<UploadResult> UploadVideoOrImageAsync(long userId, VideoUploadDto videoUpload, Stream fileStream, string fileName)
     {
-        // Root papkani olish
         var chanel = await channelRepository.GetByOwnerIdAsync(userId);
         var nodes = await megaApiClient.GetNodesAsync();
         var root = nodes.Single(n => n.Type == NodeType.Root);
-        // Faylni yuklash
+
+        // Video faylni yuklash
         var uploadedNode = await megaApiClient.UploadAsync(fileStream, fileName, root);
         var fileUrl = megaApiClient.GetDownloadLink(uploadedNode).ToString();
 
-        var mediaInfo = await FFmpeg.GetMediaInfo(fileUrl);
+        // Thumbnail faylni yuklash (ixtiyoriy)
+        string? thumbnailUrl = null;
+        if (videoUpload.Thumbnail != null)
+        {
+            await using var thumbStream = videoUpload.Thumbnail.OpenReadStream();
+            var uploadedThumbnail = await megaApiClient.UploadAsync(thumbStream, videoUpload.Thumbnail.FileName, root);
+            thumbnailUrl = megaApiClient.GetDownloadLink(uploadedThumbnail).ToString();
+        }
 
-        var videoUploadDto = new VideoUploadDto
+        // VideoEntity yaratish
+        var videoEntity = new Video
         {
             Title = videoUpload.Title,
-            Description =  videoUpload.Description,
+            Description = videoUpload.Description,
+            VideoUrl = fileUrl,
+            CloudPublicId = uploadedNode.Id,
+            Duration = TimeSpan.FromSeconds(0), // Keyin FFmpeg orqali set qilinadi
+            ChannelId = chanel.Id,
+            ThumbnailUrl = thumbnailUrl,
+            UploadedAt = DateTime.UtcNow
         };
-
-        var videoEntity = ConvertVideoUploadDtoToEntity(videoUploadDto);
-
-        videoEntity.VideoUrl = fileUrl;
-        videoEntity.CloudPublicId = uploadedNode.Id;
-        videoEntity.Duration = mediaInfo.Duration;
-        videoEntity.ChannelId = chanel.Id;
-        videoEntity.UploadedAt = DateTime.UtcNow;
 
         await videoRepository.AddAsync(videoEntity);
 

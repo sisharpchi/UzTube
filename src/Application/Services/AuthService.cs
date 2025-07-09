@@ -65,7 +65,7 @@ public class AuthService(IRoleRepository _roleRepo, IValidator<UserRegisterDto> 
 
             long userId = await _userRepo.AddAsync(user);
 
-
+            confirmer.UserId = userId;
 
             var foundUser = await _userRepo.GetByIdAsync(userId);
 

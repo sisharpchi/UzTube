@@ -5,20 +5,20 @@ namespace Application.Contracts.Sevice;
 public interface IChannelService
 {
     // 1. Create a new channel
-    Task<ChannelDto> CreateAsync(ChannelCreateDto dto);
+    Task<long> CreateAsync(long userId, ChannelCreateDto dto);
 
     // 2. Get channel by userId (har bir userda 1 ta kanal)
     Task<ChannelDto> GetByUserIdAsync(long userId);
 
     // 3. Get channel with video list
-    Task<ChannelWithVideosDto> GetWithVideosAsync(long channelId);
+    Task<ChannelWithVideosDto> GetWithVideosAsync(long userId);
 
     // 4. Update channel info
-    Task<ChannelDto> UpdateAsync(long channelId, ChannelUpdateDto dto);
+    Task UpdateAsync(long userId, ChannelUpdateDto dto);
 
     // 5. Get subscriber count
-    Task<int> GetSubscriberCountAsync(long channelId);
+    Task<int> GetSubscriberCountAsync(long userId);
 
     // 6. Get channels by filter/search query (e.g. name)
-    Task<List<ChannelListItemDto>> SearchAsync(string? searchQuery);
+    List<ChannelListItemDto> SearchAsync(string? searchQuery);
 }

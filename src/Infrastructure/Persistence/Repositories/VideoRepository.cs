@@ -25,13 +25,16 @@ public class VideoRepository(AppDbContext appDbContext) : IVideoRepository
         .Include(v => v.Likes)
         .Include(v => v.ViewHistories)
         .AsNoTracking().ToListAsync();
+
     public async Task<Video?> GetByIdAsync(long id) => await appDbContext.Videos
         .Include(v => v.Channel)
+        .Include(v => v.Comments)
         .Include(v => v.Playlist)
         .Include(v => v.Likes)
         .Include(v => v.ViewHistories)
         .AsNoTracking()
         .FirstAsync(v => v.Id == id);
+
     public async Task<IEnumerable<Video>> GetByChannelIdAsync(long channelId) => await appDbContext.Videos.Where(v => v.ChannelId == channelId).AsNoTracking().ToListAsync();
     public async Task<IEnumerable<Video>> SearchAsync(string query) => await appDbContext.Videos.Where(v => v.Title.Contains(query)).AsNoTracking().ToListAsync();
     public async Task<IEnumerable<Video>> FilterAsync(string? tag, long? channelId, string? duration, string? sort)
@@ -54,5 +57,10 @@ public class VideoRepository(AppDbContext appDbContext) : IVideoRepository
         {
             video.ViewHistories.Add(new ViewHistory { VideoId = videoId, WatchedAt = DateTime.UtcNow });
         }
+    }
+
+    public async Task<Video> GetByNodeAndOwnerId(long userId, string nodeId)
+    {
+        return await appDbContext.Videos.FirstOrDefaultAsync(v => v.Channel.OwnerId == userId && v.CloudPublicId == nodeId);
     }
 }

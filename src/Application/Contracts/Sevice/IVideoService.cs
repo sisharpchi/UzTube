@@ -39,4 +39,5 @@ public interface IVideoService : IUploadService
 
     // 12. Get video analytics (views, likes, comments count)
     //Task<VideoAnalyticsDto> GetAnalyticsAsync(long videoId);
+    Task<List<VideoDto>> GetAllVideosAsync();
 }

@@ -37,6 +37,37 @@ public class Program
             options.Limits.MaxRequestBodySize = 500 * 1024 * 1024; // 500 MB
         });
 
+        builder.Services.AddSwaggerGen(c =>
+        {
+            c.SwaggerDoc("v1", new() { Title = "Your API", Version = "v1" });
+
+            // JWT Bearer token qo‘llab-quvvatlashi uchun
+            c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Description = "JWT tokenni quyidagicha kiriting: `Bearer {token}`",
+                Name = "Authorization",
+                In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+                Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+                Scheme = "bearer",
+                BearerFormat = "JWT"
+            });
+
+            c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+            {
+                {
+                    new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+                    {
+                        Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                        {
+                            Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        }
+                    },
+                    Array.Empty<string>()
+                }
+            });
+        });
+
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
@@ -52,7 +83,10 @@ public class Program
         app.UseAuthorization();
 
         app.MapAuthEndpoints();
-        app.MapUploadEndpoints();
+        app.MapChannelEndpoints();
+        app.MapVideoEndpoints();
+        app.MapCommentEndpoints();
+
         app.MapControllers();
 
         app.Run();

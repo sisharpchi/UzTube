@@ -14,15 +14,17 @@ public class ChannelRepository(AppDbContext appDbContext) : IChannelRepository
         return channel.Id;
     }
 
-    public async Task<IEnumerable<Channel>> GetAllAsync()
+    public IQueryable<Channel> GetAllAsync()
     {
-        var channels = await appDbContext.Channels.AsNoTracking().ToListAsync();
+        var channels = appDbContext.Channels;
         return channels;
     }
 
     public Task<Channel?> GetByIdAsync(long id)
     {
         var channel = appDbContext.Channels
+            .Include(c => c.Videos)
+            .ThenInclude(c => c.ViewHistories)
             .AsNoTracking()
             .FirstOrDefaultAsync(c => c.Id == id);
         return channel;
@@ -31,6 +33,8 @@ public class ChannelRepository(AppDbContext appDbContext) : IChannelRepository
     public Task<Channel?> GetByOwnerIdAsync(long userId)
     {
         var channel = appDbContext.Channels
+            .Include(ch => ch.Videos)
+            .ThenInclude(v => v.ViewHistories)
             .AsNoTracking()
             .FirstOrDefaultAsync(c => c.OwnerId == userId);
         return channel;
