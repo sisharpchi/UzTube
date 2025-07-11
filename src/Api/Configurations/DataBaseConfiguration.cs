@@ -17,3 +17,4 @@ public static class DataBaseConfiguration
             options.UseNpgsql(postgresConnection));
     }
 }
+ 

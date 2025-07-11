@@ -32,10 +32,10 @@ public class CommentRepository(AppDbContext appDbContext) : ICommentRepository
     public async Task<IEnumerable<Comment>> GetByVideoIdAsync(long videoId)
     {
         var comments = await appDbContext.Comments
-            .Where(c => c.VideoId == videoId)
             .Include(c => c.Likes)
             .Include(c => c.Replies)
             .ThenInclude(r => r.Likes)
+            .Where(c => c.VideoId == videoId)
             .AsNoTracking()
             .ToListAsync();
 

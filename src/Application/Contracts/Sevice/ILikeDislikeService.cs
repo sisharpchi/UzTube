@@ -5,10 +5,7 @@ namespace Application.Contracts.Sevice;
 public interface ILikeDislikeService
 {
     // 1. Add like or dislike to a video
-    Task<bool> AddAsync(LikeDislikeCreateDto dto);
-
-    // 2. Remove like/dislike from a video
-    Task<bool> RemoveAsync(long videoId, long userId);
+    Task<long> ToggleAsync(long userId, LikeDislikeCreateDto dto);
 
     // 3. Get like/dislike count for a video
     Task<VideoLikeDislikeStatDto> GetStatAsync(long videoId);

@@ -35,7 +35,8 @@ public class ChannelRepository(AppDbContext appDbContext) : IChannelRepository
         var channel = appDbContext.Channels
             .Include(ch => ch.Videos)
             .ThenInclude(v => v.ViewHistories)
-            .AsNoTracking()
+            .Include(c => c.Subscribers)
+            .Include(c => c.Playlists)
             .FirstOrDefaultAsync(c => c.OwnerId == userId);
         return channel;
     }

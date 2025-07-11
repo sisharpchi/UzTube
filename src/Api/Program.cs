@@ -86,6 +86,8 @@ public class Program
         app.MapChannelEndpoints();
         app.MapVideoEndpoints();
         app.MapCommentEndpoints();
+        app.MapLikeDislikeEndpoints();
+        app.MapSubscriptionEndpoints();
 
         app.MapControllers();
 

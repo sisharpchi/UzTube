@@ -21,22 +21,25 @@ public class SubscriptionRepository(AppDbContext appDbContext) : ISubscriptionRe
         return count;
     }
 
-    public async Task DeleteAsync(long id)
+    public async Task DeleteAsync(long userId, long channelId)
     {
-        var existingSubscription = appDbContext.Subscriptions.Find(id);
+        var existingSubscription = await appDbContext.Subscriptions.FirstOrDefaultAsync(s => s.ChannelId == channelId && s.SubscriberId == userId);
         appDbContext.Subscriptions.Remove(existingSubscription);
         await appDbContext.SaveChangesAsync();
     }
 
     public Task<Subscription?> GetByUserAndChannelIdAsync(long userId, long channelId)
     {
-        return appDbContext.Subscriptions.AsNoTracking()
+        return appDbContext.Subscriptions
+            .AsNoTracking()
             .FirstOrDefaultAsync(s => s.SubscriberId == userId && s.ChannelId == channelId);
     }
 
     public async Task<IEnumerable<Subscription>> GetByUserIdAsync(long userId)
     {
-        return await appDbContext.Subscriptions.AsNoTracking()
+        return await appDbContext.Subscriptions
+            .Include(s => s.Channel)
+            .ThenInclude(c => c.Subscribers)
             .Where(s => s.SubscriberId == userId)
             .ToListAsync();
     }

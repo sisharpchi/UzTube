@@ -8,4 +8,5 @@ public interface ILikeDislikeRepository
     Task<long> AddAsync(LikeDislike like);
     Task RemoveAsync(long id);
     Task<(int likes, int dislikes)> CountByVideoIdAsync(long videoId);
+    Task UpdateAsync(LikeDislike entity);
 }

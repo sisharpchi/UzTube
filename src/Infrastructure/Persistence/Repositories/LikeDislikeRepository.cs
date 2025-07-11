@@ -14,6 +14,11 @@ public class LikeDislikeRepository(AppDbContext appDbContext) : ILikeDislikeRepo
         return like.Id;
     }
 
+    public async Task UpdateAsync(LikeDislike entity)
+    {
+        appDbContext.LikeDislikes.Update(entity);
+        await appDbContext.SaveChangesAsync();
+    }
     public async Task<(int likes, int dislikes)> CountByVideoIdAsync(long videoId)
     {
         var result = await appDbContext.LikeDislikes

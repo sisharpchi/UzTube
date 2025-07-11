@@ -22,6 +22,9 @@ public static class DependecyInjectionsConfiguration
         builder.Services.AddScoped<IViewHistoryRepository, ViewHistoryRepository>();
         builder.Services.AddScoped<ICommentLikeRepository, CommentLikeRepository>();
         builder.Services.AddScoped<ICommentRepository, CommentRepository>();
+        builder.Services.AddScoped<ILikeDislikeRepository, LikeDislikeRepository>();
+        builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
+
 
         builder.Services.AddScoped<IUploadService, VideoService>();
         builder.Services.AddScoped<IAuthService, AuthService>();
@@ -29,6 +32,8 @@ public static class DependecyInjectionsConfiguration
         builder.Services.AddScoped<IVideoService, VideoService>();
         builder.Services.AddScoped<IChannelService, ChanelService>();
         builder.Services.AddScoped<ICommentService, CommentService>();
+        builder.Services.AddScoped<ILikeDislikeService, LikeDislikeService>();
+        builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 
         builder.Services.AddScoped<IValidator<UserRegisterDto>, UserCreateDtoValidator>();
         builder.Services.AddScoped<IValidator<UserLoginDto>, UserLoginDtoValidator>();
