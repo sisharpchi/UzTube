@@ -1,9 +1,5 @@
 using Api.Configurations;
 using Api.Endpoints;
-using Application.Contracts.Repository;
-using Application.Contracts.Sevice;
-using Application.Services;
-using Infrastructure.Persistence.Repositories;
 using Microsoft.AspNetCore.Http.Features;
 
 namespace Api;
@@ -19,7 +15,7 @@ public class Program
         //    options.ListenAnyIP(5000); // Hamma IP-lardan 5000-portda qabul qiladi
         //});
 
-
+        builder.Configuration.AddJsonFile("appsettings.json");
         // Add services to the container.
         builder.Services.AddControllers();
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -101,6 +97,7 @@ public class Program
 
         //app.UseHttpsRedirection();
         app.UseCors("AllowLocalhost5173");
+        app.UseCors(policy => policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 
         app.UseAuthentication();
         app.UseAuthorization();
@@ -111,6 +108,7 @@ public class Program
         app.MapCommentEndpoints();
         app.MapLikeDislikeEndpoints();
         app.MapSubscriptionEndpoints();
+        app.MapAIEndpoints();
 
         app.MapControllers();
 

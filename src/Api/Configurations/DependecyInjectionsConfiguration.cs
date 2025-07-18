@@ -24,7 +24,7 @@ public static class DependecyInjectionsConfiguration
         builder.Services.AddScoped<ICommentRepository, CommentRepository>();
         builder.Services.AddScoped<ILikeDislikeRepository, LikeDislikeRepository>();
         builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
-
+        builder.Services.AddScoped<IAIService, AIService>();
 
         builder.Services.AddScoped<IUploadService, VideoService>();
         builder.Services.AddScoped<IAuthService, AuthService>();
