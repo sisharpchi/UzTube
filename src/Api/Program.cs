@@ -14,6 +14,12 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
+        builder.WebHost.ConfigureKestrel(options =>
+        {
+            options.ListenAnyIP(5000); // Hamma IP-lardan 5000-portda qabul qiladi
+        });
+
+
         // Add services to the container.
         builder.Services.AddControllers();
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -68,6 +74,22 @@ public class Program
             });
         });
 
+
+
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("AllowLocalhost5173", policy =>
+            {
+                policy.WithOrigins(
+                    "http://localhost:4200",
+                    "http://localhost:5173"
+                )
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+            });
+        });
+
+
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
@@ -77,7 +99,8 @@ public class Program
             app.UseSwaggerUI();
         }
 
-        app.UseHttpsRedirection();
+        //app.UseHttpsRedirection();
+        app.UseCors("AllowLocalhost5173");
 
         app.UseAuthentication();
         app.UseAuthorization();

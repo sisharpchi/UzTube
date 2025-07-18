@@ -62,7 +62,7 @@ public static class UploadEndpoints
         {
             var result = await videoService.GetAllVideosAsync();
             return Results.Ok(result);
-        });
+        }).AllowAnonymous();
 
         // GET: Get video by Id
         userGroup.MapGet("/{id:long}", async (long id, IVideoService videoService) =>
