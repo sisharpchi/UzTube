@@ -12,11 +12,11 @@ public static class UploadEndpoints
             .WithTags("Video")
             .RequireAuthorization();
 
-        // POST: Upload video
-        userGroup.MapPost("", async (
+        userGroup.MapPost("/create", async (
             HttpContext httpContext,
             [FromForm] VideoUploadDto videoUploadDto,
-            IFormFile file, // asosiy video fayl
+            IFormFile thumbnail,
+            IFormFile file,
             IVideoService uploadService) =>
         {
             var userIdClaim = httpContext.User.FindFirst("UserId");
@@ -28,18 +28,22 @@ public static class UploadEndpoints
             if (file == null || file.Length == 0)
                 return Results.BadRequest("Fayl topilmadi.");
 
-            await using var stream = file.OpenReadStream();
-            var fileName = file.FileName;
+            if (thumbnail == null || file.Length == 0)
+                return Results.BadRequest("Thumbnail");
 
-            // Thumbnail faylni videoUploadDto ichidan olamiz
-            var result = await uploadService.UploadVideoOrImageAsync(userId, videoUploadDto, stream, fileName);
+            await using var stream = file.OpenReadStream();
+            var fileName = $"{userId}_{file.Name}";
+
+            await using var stremThumbnail = thumbnail.OpenReadStream();
+            var thumbnailName = $"{userId}_{thumbnail.Name}";
+
+            var result = await uploadService.UploadVideoOrImageAsync(userId, videoUploadDto, stream, fileName, stremThumbnail, thumbnailName);
 
             return Results.Ok(result);
         })
         .DisableAntiforgery();
 
-        // DELETE: Delete video by nodeId
-        userGroup.MapDelete("", async (
+        userGroup.MapDelete("/delete/{nodeId}", async (
             string nodeId,
             HttpContext httpContext,
             IVideoService uploadService) =>
@@ -57,22 +61,21 @@ public static class UploadEndpoints
             return Results.Ok("Fayl o‘chirildi.");
         });
 
-        // GET: Get all videos
         userGroup.MapGet("/all", async (IVideoService videoService) =>
         {
             var result = await videoService.GetAllVideosAsync();
             return Results.Ok(result);
-        }).AllowAnonymous();
+        })
+        .AllowAnonymous();
 
-        // GET: Get video by Id
         userGroup.MapGet("/{id:long}", async (long id, IVideoService videoService) =>
         {
             var result = await videoService.GetByIdAsync(id);
             return Results.Ok(result);
-        });
+        })
+        .AllowAnonymous();
 
-        // GET: Get videos by userId (foydalanuvchining videolari)
-        userGroup.MapGet("/user", async (HttpContext context, IVideoService videoService) =>
+        userGroup.MapGet("/my", async (HttpContext context, IVideoService videoService) =>
         {
             var userIdClaim = context.User.FindFirst("UserId");
             if (userIdClaim == null)
@@ -83,12 +86,14 @@ public static class UploadEndpoints
             return Results.Ok(result);
         });
 
-        // GET: Get videos by channelId
-        userGroup.MapGet("/channel/{channelId:long}", async (long channelId, IVideoService videoService) =>
+        userGroup.MapGet("{channelId:long}", async (long channelId, IVideoService videoService) =>
         {
             var result = await videoService.GetByChannelAsync(channelId);
             return Results.Ok(result);
         });
+
+
+
 
         // GET: Get videos by playlistId
         userGroup.MapGet("/playlist/{playlistId:long}", async (long playlistId, IVideoService videoService) =>

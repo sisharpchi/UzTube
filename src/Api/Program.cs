@@ -14,10 +14,10 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        builder.WebHost.ConfigureKestrel(options =>
-        {
-            options.ListenAnyIP(5000); // Hamma IP-lardan 5000-portda qabul qiladi
-        });
+        //builder.WebHost.ConfigureKestrel(options =>
+        //{
+        //    options.ListenAnyIP(5000); // Hamma IP-lardan 5000-portda qabul qiladi
+        //});
 
 
         // Add services to the container.

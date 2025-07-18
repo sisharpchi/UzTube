@@ -11,9 +11,9 @@ public static class ChannelEndpoints
     {
         var group = app.MapGroup("/api/channel")
             .WithTags("Channel")
-            .RequireAuthorization(); // JWT authentication talab qilinadi
+            .RequireAuthorization();
 
-        group.MapPost("/", async (
+        group.MapPost("/create", async (
             HttpContext context,
             IChannelService service,
             [FromBody] ChannelCreateDto dto) =>
@@ -23,7 +23,7 @@ public static class ChannelEndpoints
             return Results.Ok(id);
         });
 
-        group.MapGet("/", async (
+        group.MapGet("/my", async (
             HttpContext context,
             IChannelService service) =>
         {
@@ -32,7 +32,7 @@ public static class ChannelEndpoints
             return Results.Ok(result);
         });
 
-        group.MapGet("/videos", async (
+        group.MapGet("/my-videos", async (
             HttpContext context,
             IChannelService service) =>
         {
@@ -41,7 +41,7 @@ public static class ChannelEndpoints
             return Results.Ok(result);
         });
 
-        group.MapPut("/", async (
+        group.MapPut("/update", async (
             HttpContext context,
             IChannelService service,
             [FromBody] ChannelUpdateDto dto) =>
@@ -60,7 +60,7 @@ public static class ChannelEndpoints
             return Results.Ok(count);
         });
 
-        group.MapGet("/search", async (
+        group.MapGet("/search/{query}", async (
             HttpContext context,
             [FromServices] IChannelService service,
             [FromQuery] string? query) =>
@@ -69,5 +69,14 @@ public static class ChannelEndpoints
             var result = service.SearchAsync(query);
             return Results.Ok(result);
         });
+
+        group.MapGet("/{channelId:long}", async (
+            long channelId,
+            IChannelService service) =>
+        {
+            var result = await service.GetChannelAsync(channelId);
+            return Results.Ok(result);
+        })
+        .RequireAuthorization();
     }
 }

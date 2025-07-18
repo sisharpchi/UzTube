@@ -11,5 +11,7 @@ public interface IAuthService
     Task EailCodeSender(string email);
     Task LogOut(string token);
     Task<bool> ConfirmCode(string userCode, string email);
+    Task<UserDto> GetMeAsync(long userId);
+
     Task<bool> ChangePasswordAsync(UserChangePasswordDto dto);
 }

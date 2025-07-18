@@ -21,4 +21,6 @@ public interface IChannelService
 
     // 6. Get channels by filter/search query (e.g. name)
     List<ChannelListItemDto> SearchAsync(string? searchQuery);
+
+    Task<ChannelWithVideosDto> GetChannelAsync(long channelId);
 }

@@ -1,4 +1,5 @@
-﻿using Application.Contracts.SeviceContracts;
+﻿using Api.Extensions;
+using Application.Contracts.SeviceContracts;
 using Application.Dtos.User;
 
 namespace Api.Endpoints;
@@ -53,5 +54,15 @@ public static class AuthEndpoints
             return Results.Ok();
         })
         .WithName("LogOut");
+
+        userGroup.MapGet("/profile",
+        async (HttpContext context ,IAuthService _service) =>
+        {
+            long userId = context.User.GetUserId();
+            var user = await _service.GetMeAsync(userId);
+            return Results.Ok(user);
+        })
+        .RequireAuthorization()
+        .WithName("GetProfile");
     }
 }

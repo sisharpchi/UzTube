@@ -8,12 +8,11 @@ public static class CommentEndpoints
 {
     public static void MapCommentEndpoints(this WebApplication app)
     {
-        var group = app.MapGroup("/api/commnet")
+        var group = app.MapGroup("/api/comment")
             .WithTags("Comment")
             .RequireAuthorization();
 
-        // 🔹 Add Comment
-        group.MapPost("/", async (
+        group.MapPost("/create", async (
             HttpContext context,
             CommentCreateDto dto,
             ICommentService commentService) =>
@@ -24,8 +23,7 @@ public static class CommentEndpoints
             return Results.Ok(commentId);
         });
 
-        // 🔹 Get Comments by VideoId
-        group.MapGet("/video/{videoId:long}", async (
+        group.MapGet("/all/{videoId:long}", async (
             long videoId,
             HttpContext context,
             ICommentService commentService) =>
@@ -36,8 +34,7 @@ public static class CommentEndpoints
             return Results.Ok(comments);
         });
 
-        // 🔹 Delete Comment
-        group.MapDelete("/{commentId:long}", async (
+        group.MapDelete("/delete/{commentId:long}", async (
             long commentId,
             HttpContext context,
             ICommentService commentService) =>
@@ -49,7 +46,7 @@ public static class CommentEndpoints
         });
 
         // 🔹 Toggle Like
-        group.MapPost("/{commentId:long}/like", async (
+        group.MapPost("/toggle/{commentId:long}", async (
             long commentId,
             HttpContext context,
             ICommentService commentService) =>
@@ -61,7 +58,7 @@ public static class CommentEndpoints
         });
 
         // 🔹 Get Replies
-        group.MapGet("/{commentId:long}/replies", async (
+        group.MapGet("/replies/{commentId:long}", async (
             HttpContext context,
             long commentId,
             ICommentService commentService) =>

@@ -251,4 +251,28 @@ public class AuthService(IRoleRepository _roleRepo, IValidator<UserRegisterDto> 
     {
         throw new NotImplementedException();
     }
+
+    public async Task<UserDto> GetMeAsync(long userId)
+    {
+        var user = await _userRepo.GetByIdAsync(userId);
+        if (user is null)
+        {
+            throw new EntityNotFoundException("User not found");
+        }
+        return ConvertToUserDto(user);
+    }
+
+    private UserDto ConvertToUserDto(User user)
+    {
+        return new UserDto
+        {
+            Id = user.Id,
+            FullName = user.FullName,
+            Email = user.Email,
+            CreatedAt = user.CreatedAt,
+            ProfileImageUrl = user.ProfileImageUrl,
+            RoleId = user.RoleId,
+            RoleName = user.Role.Name,
+        };
+    }
 }

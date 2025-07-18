@@ -12,7 +12,6 @@ public static class SubscriptionEndpoints
             .WithTags("Subscriptions")
             .RequireAuthorization();
 
-        // 🔹 Toggle Subscribe / Unsubscribe
         group.MapPost("/toggle", async (
             HttpContext context,
             SubscriptionCreateDto dto,
@@ -24,8 +23,7 @@ public static class SubscriptionEndpoints
             return Results.Ok(new { status = result });
         });
 
-        // 🔹 Get User Subscribed Channels
-        group.MapGet("/my", async (
+        group.MapGet("/my-subscriptions", async (
             HttpContext context,
             ISubscriptionService subscriptionService) =>
         {
@@ -35,8 +33,7 @@ public static class SubscriptionEndpoints
             return Results.Ok(channels);
         });
 
-        // 🔹 Get Subscriber Count for a Channel
-        group.MapGet("/channel/{channelId:long}/count", async (
+        group.MapGet("/subscribers/{channelId:long}/", async (
             long channelId,
             ISubscriptionService subscriptionService) =>
         {
@@ -44,8 +41,7 @@ public static class SubscriptionEndpoints
             return Results.Ok(new { count });
         });
 
-        // 🔹 Check if user is subscribed to channel
-        group.MapGet("/channel/{channelId:long}/is-subscribed", async (
+        group.MapGet("/is-subscribed/{channelId:long}", async (
             long channelId,
             HttpContext context,
             ISubscriptionService subscriptionService) =>

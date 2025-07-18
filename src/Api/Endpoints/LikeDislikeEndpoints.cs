@@ -12,7 +12,6 @@ public static class LikeDislikeEndpoints
             .WithTags("LikeDislike")
             .RequireAuthorization();
 
-        // 🔹 Toggle Like/Dislike
         group.MapPost("/toggle", async (
             HttpContext context,
             LikeDislikeCreateDto dto,
@@ -24,13 +23,12 @@ public static class LikeDislikeEndpoints
             return Results.Ok(new { id });
         });
 
-        // 🔹 Get Like/Dislike Stats by VideoId
-        group.MapGet("/video/{videoId:long}/stats", async (
+        group.MapGet("/stats/{videoId:long}", async (
             long videoId,
             HttpContext context,
             ILikeDislikeService service) =>
         {
-            long userId = context.User.GetUserId(); // agar kerak bo‘lsa, ishlatiladi
+            long userId = context.User.GetUserId();
 
             var stats = await service.GetStatAsync(videoId);
             return Results.Ok(stats);

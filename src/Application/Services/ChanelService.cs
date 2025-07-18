@@ -56,7 +56,12 @@ public class ChanelService(IChannelRepository channelRepository) : IChannelServi
             throw new InvalidOperationException("Kanal topilmadi.");
         }
 
-        var channelWithVideoDto = new ChannelWithVideosDto()
+        return ConvertToDto(channel);
+    }
+
+    private ChannelWithVideosDto ConvertToDto(Channel channel)
+    {
+        return new ChannelWithVideosDto()
         {
             Id = channel.Id,
             Description = channel.Description,
@@ -69,17 +74,16 @@ public class ChanelService(IChannelRepository channelRepository) : IChannelServi
                 VideoUrl = video.VideoUrl,
                 ThumbnailUrl = video.ThumbnailUrl,
                 Duration = video.Duration,
+                UploadedAt = video.UploadedAt,
                 ChannelId = channel.Id,
+                ChannelName = channel.Name,
+                PlaylistId = video.Playlist?.Id,
+                PlaylistName = video.Playlist?.Name,
                 LikeCount = video.Likes.Count(l => l.IsLike == true),
                 DislikeCount = video.Likes.Count(d => d.IsLike != true),
-                UploadedAt = video.UploadedAt,
-                ChannelName = channel.Name,
-                PlaylistName = video.Playlist?.Name,
-                PlaylistId = video.Playlist?.Id,
                 ViewCount = video.ViewHistories.Count(),
             }).ToList()!
         };
-        return channelWithVideoDto;
     }
 
     public List<ChannelListItemDto> SearchAsync(string? searchQuery)
@@ -156,5 +160,11 @@ public class ChanelService(IChannelRepository channelRepository) : IChannelServi
             SubscriberCount = channel.Subscribers?.Count ?? 0,
             VideoCount = channel.Videos?.Count ?? 0,
         };
+    }
+
+    public async Task<ChannelWithVideosDto> GetChannelAsync(long channelId)
+    {
+        var channel = await channelRepository.GetByIdAsync(channelId);
+        return ConvertToDto(channel!);
     }
 }

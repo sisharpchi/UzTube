@@ -6,7 +6,6 @@ public class VideoUploadDto
 {
     public string Title { get; set; }
     public string? Description { get; set; }
-    public IFormFile? Thumbnail { get; set; }
 
     public List<long>? TagIds { get; set; } // agar taglar biriktirilsa
 }

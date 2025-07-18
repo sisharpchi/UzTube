@@ -135,7 +135,7 @@ public class VideoService : IVideoService
         throw new NotImplementedException();
     }
 
-    public async Task<UploadResult> UploadVideoOrImageAsync(long userId, VideoUploadDto videoUpload, Stream fileStream, string fileName)
+    public async Task<UploadResult> UploadVideoOrImageAsync(long userId, VideoUploadDto videoUpload, Stream fileStream, string fileName, Stream thumbnailStream, string thumbnailName)
     {
         var chanel = await channelRepository.GetByOwnerIdAsync(userId);
         var nodes = await megaApiClient.GetNodesAsync();
@@ -146,13 +146,8 @@ public class VideoService : IVideoService
         var fileUrl = megaApiClient.GetDownloadLink(uploadedNode).ToString();
 
         // Thumbnail faylni yuklash (ixtiyoriy)
-        string? thumbnailUrl = null;
-        if (videoUpload.Thumbnail != null)
-        {
-            await using var thumbStream = videoUpload.Thumbnail.OpenReadStream();
-            var uploadedThumbnail = await megaApiClient.UploadAsync(thumbStream, videoUpload.Thumbnail.FileName, root);
-            thumbnailUrl = megaApiClient.GetDownloadLink(uploadedThumbnail).ToString();
-        }
+        var uploadedThumbnail = await megaApiClient.UploadAsync(thumbnailStream, thumbnailName, root);
+        var thumbnailUrl = megaApiClient.GetDownloadLink(uploadedThumbnail).ToString();
 
         // VideoEntity yaratish
         var videoEntity = new Video
