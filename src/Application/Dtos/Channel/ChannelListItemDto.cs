@@ -3,6 +3,5 @@
 public class ChannelListItemDto
 {
     public long Id { get; set; }
-    public string Name { get; set; }
-    public int SubscriberCount { get; set; }
+    public ChannelDto? ChannelDto { get; set; }
 }

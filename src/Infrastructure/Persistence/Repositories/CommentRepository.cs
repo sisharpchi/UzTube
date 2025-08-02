@@ -24,6 +24,8 @@ public class CommentRepository(AppDbContext appDbContext) : ICommentRepository
     public Task<Comment?> GetByIdAsync(long id)
     {
         var comment = appDbContext.Comments
+            .Include(v => v.Video)
+            .ThenInclude(c => c.Channel)
             .AsNoTracking()
             .FirstOrDefaultAsync(c => c.Id == id);
         return comment;

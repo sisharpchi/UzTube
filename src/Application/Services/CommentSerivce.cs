@@ -36,7 +36,7 @@ public class CommentService : ICommentService
 
         var comment = ConvertToComment(commentCreateDto);
         comment.UserId = userId;
-
+        comment.CreatedAt = DateTime.UtcNow;
         return await commentRepository.AddAsync(comment);
     }
 
@@ -59,7 +59,7 @@ public class CommentService : ICommentService
     public async Task DeleteAsync(long commentId, long userId)
     {
         var comment = await commentRepository.GetByIdAsync(commentId);
-        if (comment.UserId == userId)
+        if (comment.UserId == userId || comment.Video.Channel.OwnerId == userId)
         {
             await commentRepository.DeleteAsync(commentId);
         }
@@ -81,7 +81,7 @@ public class CommentService : ICommentService
             VideoId = c.VideoId,
             UserId = c.UserId,
             ParentCommentId = c.ParentCommentId,
-            Username = userRepository.GetByIdAsync(userId).Result.FullName,
+            Username = userRepository.GetByIdAsync(c.UserId).Result.FullName,
             LikeCount = c.Likes?.Count ?? 0,
             IsLikedByCurrentUser = c.Likes?.Any(l => l.UserId == userId) ?? false,
             Replies = c.Replies?

@@ -2,13 +2,16 @@
 using Application.Contracts.Sevice;
 using Application.Dtos.Channel;
 using Application.Dtos.Video;
+using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
 using Domain.Entities;
+using System.IO;
 
 namespace Application.Services;
 
-public class ChanelService(IChannelRepository channelRepository) : IChannelService
+public class ChanelService(IChannelRepository channelRepository, IUserRepository userRepository, Cloudinary cloudinary) : IChannelService
 {
-    public async Task<long> CreateAsync(long userId, ChannelCreateDto dto)
+    public async Task<ChannelWithVideosDto> CreateAsync(long userId, ChannelCreateDto dto)
     {
         var existsChanel = await channelRepository.GetByOwnerIdAsync(userId);
         if (existsChanel != null)
@@ -16,18 +19,14 @@ public class ChanelService(IChannelRepository channelRepository) : IChannelServi
             throw new InvalidOperationException("Sizda allaqachon kanal mavjud.");
         }
 
-        var channelDto = new ChannelCreateDto()
-        {
-            Description = dto.Description,
-            Name = dto.Name,
-        };
-        var channel = ConvertDtoToChannel(channelDto);
+        var channel = ConvertDtoToChannel(dto);
         channel.OwnerId = userId;
-
-        return await channelRepository.AddAsync(channel);
+        
+        var channelResponse = await channelRepository.AddAsync(channel);
+        return ConvertToDto(channelResponse);
     }
 
-    public async Task<ChannelDto> GetByUserIdAsync(long userId)
+    public async Task<ChannelWithVideosDto> GetByUserIdAsync(long userId)
     {
         var channel = await channelRepository.GetByOwnerIdAsync(userId);
         if (channel is null)
@@ -35,7 +34,7 @@ public class ChanelService(IChannelRepository channelRepository) : IChannelServi
             throw new InvalidOperationException("Kanal topilmadi.");
         }
 
-        return ConvertChannelToDto(channel);
+        return ConvertToDto(channel);
     }
 
     public async Task<int> GetSubscriberCountAsync(long userId)
@@ -58,7 +57,6 @@ public class ChanelService(IChannelRepository channelRepository) : IChannelServi
 
         return ConvertToDto(channel);
     }
-
     private ChannelWithVideosDto ConvertToDto(Channel channel)
     {
         return new ChannelWithVideosDto()
@@ -66,6 +64,10 @@ public class ChanelService(IChannelRepository channelRepository) : IChannelServi
             Id = channel.Id,
             Description = channel.Description,
             Name = channel.Name,
+            AvatarUrl = channel.AvatarUrl,
+            AvatarCloudPublicId = channel.AvatarCloudPublicId,
+            BannerUrl = channel.BannerUrl,
+            BannerCloudPublicId = channel.BannerCloudPublicId,
             Videos = channel.Videos?.Select(video => new VideoDto
             {
                 Id = video.Id,
@@ -76,13 +78,14 @@ public class ChanelService(IChannelRepository channelRepository) : IChannelServi
                 Duration = video.Duration,
                 UploadedAt = video.UploadedAt,
                 ChannelId = channel.Id,
-                ChannelName = channel.Name,
                 PlaylistId = video.Playlist?.Id,
                 PlaylistName = video.Playlist?.Name,
-                LikeCount = video.Likes.Count(l => l.IsLike == true),
-                DislikeCount = video.Likes.Count(d => d.IsLike != true),
-                ViewCount = video.ViewHistories.Count(),
-            }).ToList()!
+
+                LikeCount = video.Likes?.Count(l => l.IsLike == true) ?? 0,
+                DislikeCount = video.Likes?.Count(d => d.IsLike != true) ?? 0,
+                ViewCount = video.ViewHistories?.Count() ?? 0,
+
+            }).ToList() ?? new List<VideoDto>()
         };
     }
 
@@ -105,8 +108,7 @@ public class ChanelService(IChannelRepository channelRepository) : IChannelServi
         return new ChannelListItemDto()
         {
             Id = channel.Id,
-            Name = channel.Name,
-            SubscriberCount = channel.Subscribers?.Count ?? 0
+            ChannelDto = ConvertChannelToDto(channel)
         };
     }
 
@@ -167,4 +169,85 @@ public class ChanelService(IChannelRepository channelRepository) : IChannelServi
         var channel = await channelRepository.GetByIdAsync(channelId);
         return ConvertToDto(channel!);
     }
+
+    public async Task UploadAvatarAsync(long userId, Stream avatar, string fileName)
+    {
+        var existingChannel = await channelRepository.GetByOwnerIdAsync(userId);
+        if (existingChannel == null)
+            throw new InvalidOperationException("Kanal topilmadi.");
+        
+        if (!string.IsNullOrEmpty(existingChannel.AvatarUrl) || !string.IsNullOrEmpty(existingChannel.AvatarCloudPublicId))
+        {
+            // 2. Cloudinarydan video va thumbnailni o‘chiramiz
+            var deleteImageParams = new DeletionParams(existingChannel.AvatarCloudPublicId)
+            {
+                ResourceType = ResourceType.Image
+            };
+
+            var deleteImageResult = await cloudinary.DestroyAsync(deleteImageParams);
+
+            if (deleteImageResult.Result != "ok" && deleteImageResult.Result != "not_found")
+                throw new Exception($"Imageni o‘chirishda xatolik: {deleteImageResult.Result}");
+
+            existingChannel.AvatarUrl = null;
+            existingChannel.AvatarCloudPublicId = null;
+        }
+
+        var imageUploadParams = new ImageUploadParams
+        {
+            File = new FileDescription(fileName, avatar),
+            Folder = "ChannelAvatars",
+        };
+
+        var imageUploadResult = await cloudinary.UploadAsync(imageUploadParams);
+
+        if (imageUploadResult.Error != null)
+            throw new Exception($"Image upload failed: {imageUploadResult.Error.Message}");
+
+
+        existingChannel.AvatarUrl = imageUploadResult.SecureUrl.ToString();
+        existingChannel.AvatarCloudPublicId = imageUploadResult.PublicId;
+        await channelRepository.UpdateAsync(existingChannel);
+    }
+
+    public async Task UploadBannerAsync(long userId, Stream banner, string fileName)
+    {
+        var existingChannel = await channelRepository.GetByOwnerIdAsync(userId);
+        if (existingChannel == null)
+            throw new InvalidOperationException("Kanal topilmadi.");
+
+        if (!string.IsNullOrEmpty(existingChannel.BannerUrl) || !string.IsNullOrEmpty(existingChannel.BannerCloudPublicId))
+        {
+            // Delete old banner from Cloudinary
+            var deleteBannerParams = new DeletionParams(existingChannel.BannerCloudPublicId)
+            {
+                ResourceType = ResourceType.Image
+            };
+
+            var deleteBannerResult = await cloudinary.DestroyAsync(deleteBannerParams);
+
+            if (deleteBannerResult.Result != "ok" && deleteBannerResult.Result != "not_found")
+                throw new Exception($"Bannerni o‘chirishda xatolik: {deleteBannerResult.Result}");
+
+            existingChannel.BannerUrl = null;
+            existingChannel.BannerCloudPublicId = null;
+        }
+
+        var bannerUploadParams = new ImageUploadParams
+        {
+            File = new FileDescription(fileName, banner),
+            Folder = "ChannelBanners",
+        };
+
+        var bannerUploadResult = await cloudinary.UploadAsync(bannerUploadParams);
+
+        if (bannerUploadResult.Error != null)
+            throw new Exception($"Banner upload failed: {bannerUploadResult.Error.Message}");
+
+        existingChannel.BannerUrl = bannerUploadResult.SecureUrl.ToString();
+        existingChannel.BannerCloudPublicId = bannerUploadResult.PublicId;
+
+        await channelRepository.UpdateAsync(existingChannel);
+    }
+
 }

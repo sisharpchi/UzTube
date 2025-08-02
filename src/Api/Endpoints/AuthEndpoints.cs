@@ -60,7 +60,7 @@ public static class AuthEndpoints
         {
             long userId = context.User.GetUserId();
             var user = await _service.GetMeAsync(userId);
-            return Results.Ok(user);
+            return Results.Ok(new { data = user });
         })
         .RequireAuthorization()
         .WithName("GetProfile");

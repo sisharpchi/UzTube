@@ -5,10 +5,10 @@ namespace Application.Contracts.Sevice;
 public interface IChannelService
 {
     // 1. Create a new channel
-    Task<long> CreateAsync(long userId, ChannelCreateDto dto);
+    Task<ChannelWithVideosDto> CreateAsync(long userId, ChannelCreateDto dto);
 
     // 2. Get channel by userId (har bir userda 1 ta kanal)
-    Task<ChannelDto> GetByUserIdAsync(long userId);
+    Task<ChannelWithVideosDto> GetByUserIdAsync(long userId);
 
     // 3. Get channel with video list
     Task<ChannelWithVideosDto> GetWithVideosAsync(long userId);
@@ -23,4 +23,6 @@ public interface IChannelService
     List<ChannelListItemDto> SearchAsync(string? searchQuery);
 
     Task<ChannelWithVideosDto> GetChannelAsync(long channelId);
+    Task UploadAvatarAsync(long userId, Stream avatar, string fileName);
+    Task UploadBannerAsync(long userId, Stream banner, string fileName);
 }

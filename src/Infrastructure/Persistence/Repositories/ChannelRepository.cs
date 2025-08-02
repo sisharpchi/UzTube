@@ -7,11 +7,11 @@ namespace Infrastructure.Persistence.Repositories;
 
 public class ChannelRepository(AppDbContext appDbContext) : IChannelRepository
 {
-    public async Task<long> AddAsync(Channel channel)
+    public async Task<Channel> AddAsync(Channel channel)
     {
         await appDbContext.AddAsync(channel);
         await appDbContext.SaveChangesAsync();
-        return channel.Id;
+        return channel;
     }
 
     public IQueryable<Channel> GetAllAsync()

@@ -39,7 +39,9 @@ public class SubscriptionRepository(AppDbContext appDbContext) : ISubscriptionRe
     {
         return await appDbContext.Subscriptions
             .Include(s => s.Channel)
-            .ThenInclude(c => c.Subscribers)
+            .ThenInclude(s => s.Videos)
+            .Include(c => c.Channel)
+            .ThenInclude(s => s.Subscribers)
             .Where(s => s.SubscriberId == userId)
             .ToListAsync();
     }

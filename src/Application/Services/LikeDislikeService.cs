@@ -58,4 +58,10 @@ public class LikeDislikeService(ILikeDislikeRepository likeDislikeRepository) : 
         };
         return statsDto;
     }
+
+    public async Task<bool?> GetUserReactionAsync(long videoId, long userId)
+    {
+        var existing = await likeDislikeRepository.GetByUserAndVideoIdAsync(userId, videoId);
+        return existing is null ? null : existing.IsLike;
+    }
 }

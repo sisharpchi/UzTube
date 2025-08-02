@@ -31,7 +31,18 @@ public static class LikeDislikeEndpoints
             long userId = context.User.GetUserId();
 
             var stats = await service.GetStatAsync(videoId);
-            return Results.Ok(stats);
+           
+            return Results.Ok(new { success = true, data = stats });
+        });
+
+        group.MapGet("reactions/{videoId:long}", async (
+            long videoId,
+            HttpContext context,
+            ILikeDislikeService service) =>
+        {
+            long userId = context.User.GetUserId();
+            var response = await service.GetUserReactionAsync(videoId, userId);
+            return Results.Ok(new { data = response });
         });
     }
 }

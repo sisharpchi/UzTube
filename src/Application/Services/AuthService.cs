@@ -264,6 +264,9 @@ public class AuthService(IRoleRepository _roleRepo, IValidator<UserRegisterDto> 
 
     private UserDto ConvertToUserDto(User user)
     {
+        if (user == null)
+            throw new ArgumentNullException(nameof(user), "User object is null in ConvertToUserDto");
+
         return new UserDto
         {
             Id = user.Id,

@@ -25,8 +25,7 @@ public class SubscriptionService(ISubscriptionRepository subscriptionRepository)
         return new ChannelListItemDto
         {
             Id = s.ChannelId,
-            Name = s.Channel.Name,
-            SubscriberCount = s.Channel.Subscribers.Count
+            ChannelDto = ConvertChannelToDto(s.Channel)
         };
     }
 
@@ -37,13 +36,13 @@ public class SubscriptionService(ISubscriptionRepository subscriptionRepository)
         return true;
     }
 
-    public async Task<long> ToggleSubscriptionAsync(long userId, SubscriptionCreateDto subscriptionCreateDto)
+    public async Task<bool> ToggleSubscriptionAsync(long userId, SubscriptionCreateDto subscriptionCreateDto)
     {
         var isSubscribed = await IsSubscribedAsync(userId, subscriptionCreateDto.ChannelId);
         if (isSubscribed)
         {
             await subscriptionRepository.DeleteAsync(userId, subscriptionCreateDto.ChannelId);
-            return -1;
+            return false;
         }
         else
         {
@@ -53,7 +52,8 @@ public class SubscriptionService(ISubscriptionRepository subscriptionRepository)
             };
             var subscription = ConvertToSubscription(subscriptionCreateDto);
             subscription.SubscriberId = userId;
-            return await subscriptionRepository.AddAsync(subscription);
+            await subscriptionRepository.AddAsync(subscription);
+            return true;
         }
     }
 
@@ -62,6 +62,20 @@ public class SubscriptionService(ISubscriptionRepository subscriptionRepository)
         return new Subscription
         {
             ChannelId = subscriptionCreateDto.ChannelId,
+        };
+    }
+
+    private ChannelDto ConvertChannelToDto(Channel channel)
+    {
+        return new ChannelDto()
+        {
+            Id = channel.Id,
+            Description = channel.Description,
+            Name = channel.Name,
+            OwnerId = channel.OwnerId,
+            PlaylistCount = channel.Playlists?.Count ?? 0,
+            SubscriberCount = channel.Subscribers?.Count ?? 0,
+            VideoCount = channel.Videos?.Count ?? 0,
         };
     }
 }

@@ -11,5 +11,5 @@ public interface ILikeDislikeService
     Task<VideoLikeDislikeStatDto> GetStatAsync(long videoId);
 
     // 4. Check if a user has liked or disliked a video
-    //Task<LikeDislikeStatusDto?> GetUserReactionAsync(long videoId, long userId);
+    Task<bool?> GetUserReactionAsync(long videoId, long userId);
 }

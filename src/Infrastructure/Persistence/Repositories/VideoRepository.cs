@@ -28,6 +28,7 @@ public class VideoRepository(AppDbContext appDbContext) : IVideoRepository
 
     public async Task<Video?> GetByIdAsync(long id) => await appDbContext.Videos
         .Include(v => v.Channel)
+        .ThenInclude(ch => ch.Subscribers)
         .Include(v => v.Comments)
         .Include(v => v.Playlist)
         .Include(v => v.Likes)

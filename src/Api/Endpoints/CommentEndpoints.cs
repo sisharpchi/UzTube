@@ -31,7 +31,7 @@ public static class CommentEndpoints
             long userId = context.User.GetUserId();
 
             var comments = await commentService.GetByVideoIdAsync(userId, videoId);
-            return Results.Ok(comments);
+            return Results.Ok(new { success = true, data = comments });
         });
 
         group.MapDelete("/delete/{commentId:long}", async (
@@ -45,7 +45,6 @@ public static class CommentEndpoints
             return Results.Ok("Deleted");
         });
 
-        // 🔹 Toggle Like
         group.MapPost("/toggle/{commentId:long}", async (
             long commentId,
             HttpContext context,
@@ -57,7 +56,6 @@ public static class CommentEndpoints
             return Results.Ok(new { liked });
         });
 
-        // 🔹 Get Replies
         group.MapGet("/replies/{commentId:long}", async (
             HttpContext context,
             long commentId,

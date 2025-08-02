@@ -1,26 +1,33 @@
 ﻿using Application.Contracts.Repository;
 using Application.Contracts.Sevice;
+using Application.Dtos.Channel;
 using Application.Dtos.Upload;
 using Application.Dtos.Video;
 using CG.Web.MegaApiClient;
+using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
 using Domain.Entities;
-using Xabe.FFmpeg;
+using System.Threading.Tasks;
 
 namespace Application.Services;
 
 public class VideoService : IVideoService
 {
-    private readonly MegaApiClient megaApiClient;
+    //private readonly MegaApiClient megaApiClient;
+    private readonly Cloudinary cloudinary;
     private readonly IVideoRepository videoRepository;
     private readonly IViewHistoryRepository viewHistoryRepository;
     private readonly IChannelRepository channelRepository;
+    private readonly IUserRepository userRepository;
 
-    public VideoService(MegaApiClient megaApiClient, IVideoRepository videoRepository, IViewHistoryRepository viewHistoryRepository, IChannelRepository channelRepository)
+    public VideoService(MegaApiClient megaApiClient, IVideoRepository videoRepository, IViewHistoryRepository viewHistoryRepository, IChannelRepository channelRepository, Cloudinary cloudinary, IUserRepository userRepository)
     {
-        this.megaApiClient = megaApiClient;
+        //this.megaApiClient = megaApiClient;
         this.videoRepository = videoRepository;
         this.viewHistoryRepository = viewHistoryRepository;
         this.channelRepository = channelRepository;
+        this.cloudinary = cloudinary;
+        this.userRepository = userRepository;
     }
 
     public async Task<bool> AddViewAsync(long videoId, long userId)
@@ -47,19 +54,49 @@ public class VideoService : IVideoService
         return true;
     }
 
-    public async Task DeleteFileAsync(long userId, string nodeId)
+    public async Task DeleteFileAsync(long userId, string publicId)
     {
-        var video = await videoRepository.GetByNodeAndOwnerId(userId, nodeId);
+        // 1. Videoni topamiz
+        var video = await videoRepository.GetByNodeAndOwnerId(userId, publicId);
         if (video is null)
-            throw new InvalidOperationException("Node topilmadi yoki sizga tegishli emas.");
+            throw new InvalidOperationException("Video topilmadi yoki sizga tegishli emas.");
 
-        var nodes = megaApiClient.GetNodes();
-        var node = nodes.FirstOrDefault(x => x.Id == video.CloudPublicId);
+        // 2. Cloudinarydan video va thumbnailni o‘chiramiz
+        var deleteVideoParams = new DeletionParams(video.CloudPublicId)
+        {
+            ResourceType = ResourceType.Video
+        };
 
-        if (node is null)
-            throw new InvalidOperationException("Node topilmadi yoki sizga tegishli emas.");
+        var deleteVideoResult = await cloudinary.DestroyAsync(deleteVideoParams);
 
-        megaApiClient.Delete(node, moveToTrash: true);
+        if (deleteVideoResult.Result != "ok" && deleteVideoResult.Result != "not_found")
+            throw new Exception($"Videoni o‘chirishda xatolik: {deleteVideoResult.Result}");
+
+        if (!string.IsNullOrEmpty(video.ThumbnailUrl))
+        {
+            // Thumbnail publicId ni URL dan ajratib olish
+            var thumbnailPublicId = GetPublicIdFromUrl(video.ThumbnailUrl);
+
+            var deleteImageParams = new DeletionParams(thumbnailPublicId);
+            var deleteImageResult = await cloudinary.DestroyAsync(deleteImageParams);
+
+            if (deleteImageResult.Result != "ok" && deleteImageResult.Result != "not_found")
+                throw new Exception($"Thumbnailni o‘chirishda xatolik: {deleteImageResult.Result}");
+        }
+
+        // 3. Videoni bazadan o‘chiramiz yoki flag belgilaymiz
+        await videoRepository.DeleteAsync(video.Id); // yoki IsDeleted = true
+    }
+
+    private string GetPublicIdFromUrl(string url)
+    {
+        var uri = new Uri(url);
+        var segments = uri.Segments;
+        var fileName = segments.Last(); // example: `thumbnail_abc123.jpg`
+        var folderPath = string.Join("", segments.Skip(segments.Length - 2)).Trim('/'); // example: `thumbnails/thumbnail_abc123.jpg`
+        var publicIdWithExtension = folderPath;
+
+        return Path.ChangeExtension(publicIdWithExtension, null); // Remove extension
     }
 
     public async Task<List<VideoDto>> GetAllVideosAsync()
@@ -135,43 +172,67 @@ public class VideoService : IVideoService
         throw new NotImplementedException();
     }
 
-    public async Task<UploadResult> UploadVideoOrImageAsync(long userId, VideoUploadDto videoUpload, Stream fileStream, string fileName, Stream thumbnailStream, string thumbnailName)
+    public async Task<Dtos.Upload.UploadResult> UploadVideoOrImageAsync(
+            long userId,
+            VideoUploadDto videoUpload,
+            Stream fileStream,
+            string fileName,
+            Stream thumbnailStream,
+            string thumbnailName)
     {
-        var chanel = await channelRepository.GetByOwnerIdAsync(userId);
-        var nodes = await megaApiClient.GetNodesAsync();
-        var root = nodes.Single(n => n.Type == NodeType.Root);
+        var channel = await channelRepository.GetByOwnerIdAsync(userId);
 
-        // Video faylni yuklash
-        var uploadedNode = await megaApiClient.UploadAsync(fileStream, fileName, root);
-        var fileUrl = megaApiClient.GetDownloadLink(uploadedNode).ToString();
+        // 🎥 Video faylni yuklash
+        var videoUploadParams = new VideoUploadParams
+        {
+            File = new FileDescription(fileName, fileStream),
+            Folder = "videos",
+        };
 
-        // Thumbnail faylni yuklash (ixtiyoriy)
-        var uploadedThumbnail = await megaApiClient.UploadAsync(thumbnailStream, thumbnailName, root);
-        var thumbnailUrl = megaApiClient.GetDownloadLink(uploadedThumbnail).ToString();
+        var videoUploadResult = await cloudinary.UploadAsync(videoUploadParams);
 
-        // VideoEntity yaratish
-        var videoEntity = new Video
+        if (videoUploadResult.Error != null)
+            throw new Exception($"Video upload failed: {videoUploadResult.Error.Message}");
+
+        // 🕒 Duration ni olish
+        double durationInSeconds = videoUploadResult?.Duration ?? 0; // Cloudinary video duration returns in seconds
+
+        // 🖼 Thumbnail faylni yuklash
+        var imageUploadParams = new ImageUploadParams
+        {
+            File = new FileDescription(thumbnailName, thumbnailStream),
+            Folder = "thumbnails"
+        };
+
+        var imageUploadResult = await cloudinary.UploadAsync(imageUploadParams);
+
+        if (imageUploadResult.Error != null)
+            throw new Exception($"Thumbnail upload failed: {imageUploadResult.Error.Message}");
+
+        // 🎞 VideoEntity yaratish
+        var videoEntity = new Domain.Entities.Video
         {
             Title = videoUpload.Title,
             Description = videoUpload.Description,
-            VideoUrl = fileUrl,
-            CloudPublicId = uploadedNode.Id,
-            Duration = TimeSpan.FromSeconds(0), // Keyin FFmpeg orqali set qilinadi
-            ChannelId = chanel.Id,
-            ThumbnailUrl = thumbnailUrl,
-            UploadedAt = DateTime.UtcNow
+            VideoUrl = videoUploadResult.SecureUrl.ToString(),
+            CloudPublicId = videoUploadResult.PublicId,
+            Duration = TimeSpan.FromSeconds(durationInSeconds),
+            ChannelId = channel.Id,
+            ThumbnailUrl = imageUploadResult.SecureUrl.ToString(),
+            UploadedAt = DateTime.UtcNow,
+            Channel = channel,
         };
 
         await videoRepository.AddAsync(videoEntity);
 
-        return new UploadResult
+        return new Dtos.Upload.UploadResult
         {
-            FileUrl = fileUrl,
-            NodeId = uploadedNode.Id
+            FileUrl = videoUploadResult.SecureUrl.ToString(),
+            NodeId = videoUploadResult.PublicId
         };
     }
 
-    private VideoDto ConvertToVideoDto(Video video)
+    private VideoDto ConvertToVideoDto(Domain.Entities.Video video)
     {
         return new VideoDto
         {
@@ -183,7 +244,7 @@ public class VideoService : IVideoService
             ChannelId = video.ChannelId,
             ThumbnailUrl = video.ThumbnailUrl,
             Duration = video.Duration,
-            ChannelName = video.Channel?.Name,
+            Channel = ConvertChannelToDto(video.Channel),
             DislikeCount = video.Likes.Count(l => l.IsLike != true),
             LikeCount = video.Likes.Count(l => l.IsLike == true),
             ViewCount = video.ViewHistories.Count,
@@ -192,9 +253,25 @@ public class VideoService : IVideoService
         };
     }
 
-    private Video ConvertVideoUploadDtoToEntity(VideoUploadDto dto)
+
+    private ChannelDto ConvertChannelToDto(Domain.Entities.Channel channel)
     {
-        return new Video
+        return new ChannelDto
+        {
+            Id = channel.Id,
+            Name = channel.Name,
+            Description = channel.Description,
+            OwnerUsername = userRepository.GetByIdAsync(channel.OwnerId).Result!.FullName,
+            OwnerId = channel.OwnerId,
+            VideoCount = channel.Videos?.Count ?? 0,
+            SubscriberCount = channel.Subscribers?.Count ?? 0,
+            PlaylistCount = channel.Playlists?.Count ?? 0
+        };
+    }
+
+    private Domain.Entities.Video ConvertVideoUploadDtoToEntity(VideoUploadDto dto)
+    {
+        return new Domain.Entities.Video
         {
             Title = dto.Title,
             Description = dto.Description,

@@ -1,5 +1,6 @@
 using Api.Configurations;
 using Api.Endpoints;
+using CloudinaryDotNet;
 using Microsoft.AspNetCore.Http.Features;
 
 namespace Api;
@@ -37,6 +38,11 @@ public class Program
         builder.WebHost.ConfigureKestrel(options =>
         {
             options.Limits.MaxRequestBodySize = 500 * 1024 * 1024; // 500 MB
+        });
+
+        builder.Services.Configure<FormOptions>(options =>
+        {
+            options.MultipartBodyLengthLimit = 524288000; // 500 MB
         });
 
         builder.Services.AddSwaggerGen(c =>
@@ -84,6 +90,17 @@ public class Program
                 .AllowAnyMethod();
             });
         });
+
+        var cloudinaryAccount = new Account(
+            builder.Configuration["Cloudinary:CloudName"],
+            builder.Configuration["Cloudinary:ApiKey"],
+            builder.Configuration["Cloudinary:ApiSecret"]
+        );
+
+        var cloudinary = new Cloudinary(cloudinaryAccount);
+
+        // ?? DI ga qo‘shamiz
+        builder.Services.AddSingleton(cloudinary);
 
 
         var app = builder.Build();

@@ -1,4 +1,5 @@
-﻿using Application.Dtos.Tag;
+﻿using Application.Dtos.Channel;
+using Application.Dtos.Tag;
 
 namespace Application.Dtos.Video;
 
@@ -14,8 +15,8 @@ public class VideoDto
     public DateTime UploadedAt { get; set; }
 
     public long ChannelId { get; set; }
-    public string ChannelName { get; set; }
-
+    public ChannelDto? Channel { get; set; }
+    public bool IsSubscribed { get; set; }
     public long? PlaylistId { get; set; }
     public string? PlaylistName { get; set; }
 

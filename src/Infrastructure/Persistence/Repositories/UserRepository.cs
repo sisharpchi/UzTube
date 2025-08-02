@@ -46,6 +46,8 @@ public class UserRepository(AuthDbContext authDbContext) : IUserRepository
     {
         var user = await authDbContext.Users
             .Include(u => u.Confirmer)
+            .Include(u => u.Role)
+            .Include(u => u.RefreshTokens)
             .FirstOrDefaultAsync(u => u.Id == id);
         
         return user;

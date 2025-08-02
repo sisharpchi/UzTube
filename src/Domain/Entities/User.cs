@@ -10,6 +10,7 @@ public class User
     public string PasswordHash { get; set; }
     public string Salt { get; set; } // For password hashing
     public string? ProfileImageUrl { get; set; }
+    public string? ProfileCloudPublicId { get; set; } // For cloud storage public ID
     public DateTime CreatedAt { get; set; }
 
     public long RoleId { get; set; }

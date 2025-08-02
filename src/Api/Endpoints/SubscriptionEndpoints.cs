@@ -20,7 +20,7 @@ public static class SubscriptionEndpoints
             long userId = context.User.GetUserId();
 
             var result = await subscriptionService.ToggleSubscriptionAsync(userId, dto);
-            return Results.Ok(new { status = result });
+            return Results.Ok(new { isSubscribed = result });
         });
 
         group.MapGet("/my-subscriptions", async (
@@ -30,7 +30,7 @@ public static class SubscriptionEndpoints
             long userId = context.User.GetUserId();
 
             var channels = await subscriptionService.GetUserSubscriptionsAsync(userId);
-            return Results.Ok(channels);
+            return Results.Ok(new { data = channels });
         });
 
         group.MapGet("/subscribers/{channelId:long}/", async (
@@ -38,7 +38,7 @@ public static class SubscriptionEndpoints
             ISubscriptionService subscriptionService) =>
         {
             var count = await subscriptionService.GetSubscriberCountAsync(channelId);
-            return Results.Ok(new { count });
+            return Results.Ok(new { success = true, data = count });
         });
 
         group.MapGet("/is-subscribed/{channelId:long}", async (
@@ -49,7 +49,7 @@ public static class SubscriptionEndpoints
             long userId = context.User.GetUserId();
 
             var isSubscribed = await subscriptionService.IsSubscribedAsync(userId, channelId);
-            return Results.Ok(new { isSubscribed });
+            return Results.Ok(new { data = isSubscribed });
         });
     }
 }

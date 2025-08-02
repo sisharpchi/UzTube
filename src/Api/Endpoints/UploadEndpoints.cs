@@ -1,4 +1,5 @@
-﻿using Application.Contracts.Sevice;
+﻿using Api.Extensions;
+using Application.Contracts.Sevice;
 using Application.Dtos.Video;
 using Microsoft.AspNetCore.Mvc;
 
@@ -68,10 +69,13 @@ public static class UploadEndpoints
         })
         .AllowAnonymous();
 
-        userGroup.MapGet("/{id:long}", async (long id, IVideoService videoService) =>
+        userGroup.MapGet("/{id:long}", async (long id,HttpContext context,  IVideoService videoService, ISubscriptionService subsService) =>
         {
+            long userId = context.User.GetUserId();
             var result = await videoService.GetByIdAsync(id);
-            return Results.Ok(result);
+            var resSub = await subsService.IsSubscribedAsync(userId,result.ChannelId);
+            result.IsSubscribed = resSub;
+            return Results.Ok(new { success = true, data = result});
         })
         .AllowAnonymous();
 
@@ -86,7 +90,7 @@ public static class UploadEndpoints
             return Results.Ok(result);
         });
 
-        userGroup.MapGet("{channelId:long}", async (long channelId, IVideoService videoService) =>
+        userGroup.MapGet("by-channel/{channelId:long}", async (long channelId, IVideoService videoService) =>
         {
             var result = await videoService.GetByChannelAsync(channelId);
             return Results.Ok(result);

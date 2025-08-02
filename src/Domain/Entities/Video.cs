@@ -14,7 +14,7 @@ public class Video
     public DateTime UploadedAt { get; set; }
 
     public long ChannelId { get; set; }
-    public Channel Channel { get; set; } = null!;
+    public Channel Channel { get; set; }
 
     public long? PlaylistId { get; set; }
     public Playlist? Playlist { get; set; }

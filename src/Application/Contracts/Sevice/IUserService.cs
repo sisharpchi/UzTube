@@ -21,4 +21,5 @@ public interface IUserService
 
     // 9. Delete user
     Task<bool> DeleteAsync(long userId);
+    Task UploadProfileImg(long userId, Stream avatar, string fileName);
 }
