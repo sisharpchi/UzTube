@@ -44,8 +44,8 @@ public static class UploadEndpoints
         })
         .DisableAntiforgery();
 
-        userGroup.MapDelete("/delete/{nodeId}", async (
-            string nodeId,
+        userGroup.MapDelete("/delete/{videoId}", async (
+            long videoId,
             HttpContext httpContext,
             IVideoService uploadService) =>
         {
@@ -55,10 +55,7 @@ public static class UploadEndpoints
 
             var userId = long.Parse(userIdClaim.Value);
 
-            if (string.IsNullOrWhiteSpace(nodeId))
-                return Results.BadRequest("NodeId bo‘sh bo‘lishi mumkin emas.");
-
-            await uploadService.DeleteFileAsync(userId, nodeId);
+            await uploadService.DeleteFileAsync(userId, videoId);
             return Results.Ok("Fayl o‘chirildi.");
         });
 

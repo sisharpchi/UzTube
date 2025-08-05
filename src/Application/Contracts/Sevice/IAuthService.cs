@@ -12,6 +12,7 @@ public interface IAuthService
     Task LogOut(string token);
     Task<bool> ConfirmCode(string userCode, string email);
     Task<UserDto> GetMeAsync(long userId);
+    Task EditMeAsync(long userId, string fullName);
 
     Task<bool> ChangePasswordAsync(UserChangePasswordDto dto);
 }

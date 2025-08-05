@@ -14,7 +14,7 @@ public class Channel
 
     public long OwnerId { get; set; }
 
-    public ICollection<Video> Videos { get; set; }
-    public ICollection<Subscription> Subscribers { get; set; } 
-    public ICollection<Playlist> Playlists { get; set; }
+    public ICollection<Video>? Videos { get; set; }
+    public ICollection<Subscription>? Subscribers { get; set; } 
+    public ICollection<Playlist>? Playlists { get; set; }
 }

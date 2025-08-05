@@ -12,17 +12,20 @@ public class CommentService : ICommentService
     private readonly IUserRepository userRepository;
     private readonly IVideoRepository videoRepository;
     private readonly ICommentLikeRepository commentLikeRepository;
+    private readonly IChannelRepository channelRepository;
 
     public CommentService(
         IVideoRepository videoRepository,
         IUserRepository userRepository,
         ICommentRepository commentRepository,
-        ICommentLikeRepository commentLikeRepository)
+        ICommentLikeRepository commentLikeRepository,
+        IChannelRepository channelRepository)
     {
         this.videoRepository = videoRepository;
         this.userRepository = userRepository;
         this.commentRepository = commentRepository;
         this.commentLikeRepository = commentLikeRepository;
+        this.channelRepository = channelRepository;
     }
 
     public async Task<long> AddAsync(long userId, CommentCreateDto dto)
@@ -117,5 +120,13 @@ public class CommentService : ICommentService
             await commentLikeRepository.RemoveAsync(existingLike.Id);
             return false; 
         } 
+    }
+
+    public async Task<int> CountAllCommentsByChannelId(long userId)
+    {
+        var channel = await channelRepository.GetByOwnerIdAsync(userId);
+        if (channel is null) throw new Exception("Not Found Channel");
+        var count = await commentRepository.CountAllCommentsByChannelId(userId, channel.Id);
+        return count;
     }
 }

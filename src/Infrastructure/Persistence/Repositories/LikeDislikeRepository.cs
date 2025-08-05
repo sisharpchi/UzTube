@@ -45,4 +45,20 @@ public class LikeDislikeRepository(AppDbContext appDbContext) : ILikeDislikeRepo
         appDbContext.LikeDislikes.Remove(likeDislike);
         await appDbContext.SaveChangesAsync();
     }
+
+    public async Task<int> CountAllLikesByChannelId(long userId, long channelId)
+    {
+        return await appDbContext.Channels.Where(ch => ch.OwnerId == userId && ch.Id == channelId)
+            .SelectMany(ch => ch.Videos)
+            .SelectMany(v => v.Likes)
+            .CountAsync(ld => ld.Video.ChannelId == channelId && ld.IsLike);
+    }
+
+    public async Task<int> CountAllDislikesByChannelId(long userId, long channelId)
+    {
+        return await appDbContext.Channels.Where(ch => ch.OwnerId == userId && ch.Id == channelId)
+            .SelectMany(ch => ch.Videos)
+            .SelectMany(v => v.Likes)
+            .CountAsync(ld => ld.Video.ChannelId == channelId && !ld.IsLike);
+    }
 }

@@ -13,6 +13,7 @@ public class VideoDto
     public string? ThumbnailUrl { get; set; }
     public TimeSpan Duration { get; set; }
     public DateTime UploadedAt { get; set; }
+    public string CloudePublicId { get; set; }
 
     public long ChannelId { get; set; }
     public ChannelDto? Channel { get; set; }

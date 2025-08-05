@@ -4,6 +4,7 @@ namespace Application.Contracts.Repository;
 
 public interface IVideoRepository
 {
+    Task<Video?> GetByIdAsync(long userId, long id);
     Task<Video?> GetByIdAsync(long id);
     Task<Video> GetByNodeAndOwnerId(long userId, string nodeId);
     Task<IEnumerable<Video>> GetAllAsync();

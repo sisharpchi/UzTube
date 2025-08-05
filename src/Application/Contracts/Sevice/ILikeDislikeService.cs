@@ -12,4 +12,7 @@ public interface ILikeDislikeService
 
     // 4. Check if a user has liked or disliked a video
     Task<bool?> GetUserReactionAsync(long videoId, long userId);
+
+    Task<int> CountAllLikesByChannelId(long userId);
+    Task<int> CountAllDislikesByChannelId(long userId);
 }

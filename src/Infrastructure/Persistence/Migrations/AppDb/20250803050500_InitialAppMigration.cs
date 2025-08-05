@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Infrastructure.Persistence.Migrations.AppDb
 {
     /// <inheritdoc />
-    public partial class InitUpdateAppDb : Migration
+    public partial class InitialAppMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -19,6 +19,10 @@ namespace Infrastructure.Persistence.Migrations.AppDb
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    AvatarUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    AvatarCloudPublicId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    BannerUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    BannerCloudPublicId = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     OwnerId = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
@@ -127,7 +131,7 @@ namespace Infrastructure.Persistence.Migrations.AppDb
                         column: x => x.PlaylistId,
                         principalTable: "Playlists",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateTable(
@@ -175,8 +179,7 @@ namespace Infrastructure.Persistence.Migrations.AppDb
                         name: "FK_LikeDislikes_Videos_VideoId",
                         column: x => x.VideoId,
                         principalTable: "Videos",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(

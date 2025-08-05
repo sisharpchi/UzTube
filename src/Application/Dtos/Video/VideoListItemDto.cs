@@ -5,6 +5,7 @@ public class VideoListItemDto
     public long Id { get; set; }
     public string Title { get; set; }
     public string? ThumbnailUrl { get; set; }
+
     public TimeSpan Duration { get; set; }
 
     public string ChannelName { get; set; }

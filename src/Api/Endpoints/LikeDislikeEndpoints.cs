@@ -44,5 +44,26 @@ public static class LikeDislikeEndpoints
             var response = await service.GetUserReactionAsync(videoId, userId);
             return Results.Ok(new { data = response });
         });
+
+        group.MapGet("/likes/count", async (
+            HttpContext context,
+            ILikeDislikeService service) =>
+        {
+            long userId = context.User.GetUserId();
+
+            var count = await service.CountAllLikesByChannelId(userId);
+            return Results.Ok(new { data = count });
+        });
+
+        group.MapGet("/dislikes/count", async (
+            HttpContext context,
+            ILikeDislikeService service) =>
+        {
+            long userId = context.User.GetUserId();
+
+            var count = await service.CountAllDislikesByChannelId(userId);
+            return Results.Ok(new { data = count });
+        });
+
     }
 }

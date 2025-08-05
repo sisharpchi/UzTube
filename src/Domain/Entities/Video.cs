@@ -19,9 +19,9 @@ public class Video
     public long? PlaylistId { get; set; }
     public Playlist? Playlist { get; set; }
 
-    public ICollection<Comment> Comments { get; set; } 
-    public ICollection<LikeDislike> Likes { get; set; } 
-    public ICollection<ViewHistory> ViewHistories { get; set; } 
-    public ICollection<VideoTag> VideoTags { get; set; } 
-    public ICollection<VideoReport> Reports { get; set; } 
+    public ICollection<Comment>? Comments { get; set; } 
+    public ICollection<LikeDislike>? Likes { get; set; } 
+    public ICollection<ViewHistory>? ViewHistories { get; set; } 
+    public ICollection<VideoTag>? VideoTags { get; set; } 
+    public ICollection<VideoReport>? Reports { get; set; } 
 }

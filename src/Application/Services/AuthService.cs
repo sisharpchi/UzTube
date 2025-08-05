@@ -278,4 +278,15 @@ public class AuthService(IRoleRepository _roleRepo, IValidator<UserRegisterDto> 
             RoleName = user.Role.Name,
         };
     }
+
+    public async Task EditMeAsync(long userId, string fullName)
+    {
+        var user = await _userRepo.GetByIdAsync(userId);
+        if (user is null)
+        {
+            throw new EntityNotFoundException("User not found");
+        }
+        user.FullName = fullName;
+        await _userRepo.UpdateAsync(user);
+    }
 }

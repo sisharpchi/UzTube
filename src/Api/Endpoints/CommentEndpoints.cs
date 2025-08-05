@@ -66,5 +66,15 @@ public static class CommentEndpoints
             var replies = await commentService.GetRepliesAsync(commentId);
             return Results.Ok(replies);
         });
+
+        group.MapGet("/count", async (
+            HttpContext context,
+            ICommentService commentService) =>
+        {
+            long userId = context.User.GetUserId();
+
+            var count = await commentService.CountAllCommentsByChannelId(userId);
+            return Results.Ok(new { data = count });
+        });
     }
 }

@@ -64,5 +64,15 @@ public static class AuthEndpoints
         })
         .RequireAuthorization()
         .WithName("GetProfile");
+
+        userGroup.MapPut("/edit-profile",
+        async (HttpContext context, string fullName, IAuthService _service) =>
+        {
+            long userId = context.User.GetUserId();
+            await _service.EditMeAsync(userId, fullName);
+            return Results.Ok(new { message = "Profile updated successfully." });
+        })
+        .RequireAuthorization()
+        .WithName("EditProfile");
     }
 }

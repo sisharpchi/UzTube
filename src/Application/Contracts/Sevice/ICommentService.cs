@@ -21,4 +21,5 @@ public interface ICommentService
 
     // 7. Count comments for a video
     Task<int> CountByVideoIdAsync(long videoId);
+    Task<int> CountAllCommentsByChannelId(long userId);
 }

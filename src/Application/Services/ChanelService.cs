@@ -13,8 +13,8 @@ public class ChanelService(IChannelRepository channelRepository, IUserRepository
 {
     public async Task<ChannelWithVideosDto> CreateAsync(long userId, ChannelCreateDto dto)
     {
-        var existsChanel = await channelRepository.GetByOwnerIdAsync(userId);
-        if (existsChanel != null)
+        var existsChanel = await channelRepository.ExistsChannelByOwnerIdAsync(userId);
+        if (existsChanel)
         {
             throw new InvalidOperationException("Sizda allaqachon kanal mavjud.");
         }

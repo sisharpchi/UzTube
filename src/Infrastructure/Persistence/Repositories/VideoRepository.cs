@@ -15,16 +15,41 @@ public class VideoRepository(AppDbContext appDbContext) : IVideoRepository
     }
     public async Task DeleteAsync(long id)
     {
-        var video = await appDbContext.Videos.FindAsync(id);
-        appDbContext.Videos.Remove(video!);
+        var video = await appDbContext.Videos
+            .Include(v => v.Comments)
+            .Include(v => v.Likes)
+            .Include(v => v.Reports)
+            .Include(v => v.ViewHistories)
+            .FirstOrDefaultAsync(v => v.Id == id);
+
+        if (video == null)
+            throw new Exception($"Video with id {id} not found");
+
+        // Bog‘liqlarni o‘chirish
+        appDbContext.Comments.RemoveRange(video.Comments);
+        appDbContext.LikeDislikes.RemoveRange(video.Likes);
+        appDbContext.VideoReports.RemoveRange(video.Reports);
+        appDbContext.ViewHistories.RemoveRange(video.ViewHistories);
+
+        appDbContext.Videos.Remove(video);
         await appDbContext.SaveChangesAsync();
     }
-    public async Task<IEnumerable<Video>> GetAllAsync() => await appDbContext.Videos
+    public async Task<IEnumerable<Video>?> GetAllAsync() => await appDbContext.Videos
         .Include(v => v.Channel)
         .Include(v => v.Playlist)
         .Include(v => v.Likes)
         .Include(v => v.ViewHistories)
         .AsNoTracking().ToListAsync();
+
+    public async Task<Video?> GetByIdAsync(long userId, long id) => await appDbContext.Videos
+        .Include(v => v.Channel)
+        .ThenInclude(ch => ch.Subscribers)
+        .Include(v => v.Comments)
+        .Include(v => v.Playlist)
+        .Include(v => v.Likes)
+        .Include(v => v.ViewHistories)
+        .AsNoTracking()
+        .FirstAsync(v => v.Id == id && v.Channel.OwnerId == userId);
 
     public async Task<Video?> GetByIdAsync(long id) => await appDbContext.Videos
         .Include(v => v.Channel)

@@ -12,4 +12,5 @@ public class ChannelDto
     public int VideoCount { get; set; }
     public int SubscriberCount { get; set; }
     public int PlaylistCount { get; set; }
+    public string? AvatarUrl { get; set; }
 }

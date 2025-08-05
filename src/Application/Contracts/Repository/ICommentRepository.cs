@@ -9,4 +9,5 @@ public interface ICommentRepository
     Task<IEnumerable<Comment>> GetRepliesAsync(long parentId);
     Task<long> AddAsync(Comment comment);
     Task DeleteAsync(long id);
+    Task<int> CountAllCommentsByChannelId(long userId, long channelId);
 }

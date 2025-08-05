@@ -14,6 +14,12 @@ public class CommentRepository(AppDbContext appDbContext) : ICommentRepository
         return comment.Id;
     }
 
+    public async Task<int> CountAllCommentsByChannelId(long userId, long channelId)
+    {
+        var count = await appDbContext.Channels.Where(ch => ch.OwnerId == userId && ch.Id == channelId).SelectMany(v => v.Videos!).SelectMany(c => c.Comments!).CountAsync();
+        return count;
+    }
+
     public async Task DeleteAsync(long id)
     {
         var existingComment = appDbContext.Comments.Find(id);

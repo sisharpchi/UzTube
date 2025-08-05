@@ -1,13 +1,11 @@
 ﻿using Application.Contracts.Repository;
 using Application.Contracts.Sevice;
 using Application.Dtos.Channel;
-using Application.Dtos.Upload;
 using Application.Dtos.Video;
 using CG.Web.MegaApiClient;
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
 using Domain.Entities;
-using System.Threading.Tasks;
 
 namespace Application.Services;
 
@@ -40,63 +38,63 @@ public class VideoService : IVideoService
                 VideoId = videoId,
                 UserId = userId,
                 WatchedAt = DateTime.UtcNow,
-                SecondsWatched = 0, // Boshlang'ich qiymat
+                SecondsWatched = 0,
             };
 
             await viewHistoryRepository.AddAsync(newView);
         }
         else
         {
-            // Faqat viewedAt vaqtini yangilash (optional)
             existingView.WatchedAt = DateTime.UtcNow;
             await viewHistoryRepository.UpdateAsync(existingView);
         }
         return true;
     }
 
-    public async Task DeleteFileAsync(long userId, string publicId)
+    public async Task DeleteFileAsync(long userId, long videoId)
     {
-        // 1. Videoni topamiz
-        var video = await videoRepository.GetByNodeAndOwnerId(userId, publicId);
+        var video = await videoRepository.GetByIdAsync(userId, videoId);
         if (video is null)
             throw new InvalidOperationException("Video topilmadi yoki sizga tegishli emas.");
 
-        // 2. Cloudinarydan video va thumbnailni o‘chiramiz
-        var deleteVideoParams = new DeletionParams(video.CloudPublicId)
-        {
-            ResourceType = ResourceType.Video
-        };
+        //var deleteVideoParams = new DeletionParams(video.CloudPublicId)
+        //{
+        //    ResourceType = ResourceType.Video,
+        //    Type = "authenticated"
+        //};
 
-        var deleteVideoResult = await cloudinary.DestroyAsync(deleteVideoParams);
+        //var deleteVideoResult = await cloudinary.DestroyAsync(deleteVideoParams);
 
-        if (deleteVideoResult.Result != "ok" && deleteVideoResult.Result != "not_found")
-            throw new Exception($"Videoni o‘chirishda xatolik: {deleteVideoResult.Result}");
+        //if (deleteVideoResult.Error != null)
+        //    throw new Exception($"Videoni o‘chirishda xatolik: {deleteVideoResult.Result}");
 
-        if (!string.IsNullOrEmpty(video.ThumbnailUrl))
-        {
-            // Thumbnail publicId ni URL dan ajratib olish
-            var thumbnailPublicId = GetPublicIdFromUrl(video.ThumbnailUrl);
+        //if (!string.IsNullOrEmpty(video.ThumbnailUrl))
+        //{
+        //    var thumbnailPublicId = GetPublicIdFromUrl(video.ThumbnailUrl);
 
-            var deleteImageParams = new DeletionParams(thumbnailPublicId);
-            var deleteImageResult = await cloudinary.DestroyAsync(deleteImageParams);
+        //    var deleteImageParams = new DeletionParams(thumbnailPublicId)
+        //    {
+        //        ResourceType = ResourceType.Image,
+        //        Type = "authenticated"
+        //    };
+        //    var deleteImageResult = await cloudinary.DestroyAsync(deleteImageParams);
 
-            if (deleteImageResult.Result != "ok" && deleteImageResult.Result != "not_found")
-                throw new Exception($"Thumbnailni o‘chirishda xatolik: {deleteImageResult.Result}");
-        }
+        //    if (deleteImageResult.Error != null)
+        //        throw new Exception($"Thumbnailni o‘chirishda xatolik: {deleteImageResult.Result}");
+        //}
 
-        // 3. Videoni bazadan o‘chiramiz yoki flag belgilaymiz
-        await videoRepository.DeleteAsync(video.Id); // yoki IsDeleted = true
+        await videoRepository.DeleteAsync(videoId);
     }
 
     private string GetPublicIdFromUrl(string url)
     {
         var uri = new Uri(url);
         var segments = uri.Segments;
-        var fileName = segments.Last(); // example: `thumbnail_abc123.jpg`
-        var folderPath = string.Join("", segments.Skip(segments.Length - 2)).Trim('/'); // example: `thumbnails/thumbnail_abc123.jpg`
+        var fileName = segments.Last(); 
+        var folderPath = string.Join("", segments.Skip(segments.Length - 2)).Trim('/');
         var publicIdWithExtension = folderPath;
 
-        return Path.ChangeExtension(publicIdWithExtension, null); // Remove extension
+        return Path.ChangeExtension(publicIdWithExtension, null); 
     }
 
     public async Task<List<VideoDto>> GetAllVideosAsync()
@@ -201,7 +199,7 @@ public class VideoService : IVideoService
         var imageUploadParams = new ImageUploadParams
         {
             File = new FileDescription(thumbnailName, thumbnailStream),
-            Folder = "thumbnails"
+            Folder = "thumbnails",
         };
 
         var imageUploadResult = await cloudinary.UploadAsync(imageUploadParams);
@@ -249,7 +247,8 @@ public class VideoService : IVideoService
             LikeCount = video.Likes.Count(l => l.IsLike == true),
             ViewCount = video.ViewHistories.Count,
             PlaylistId = video.PlaylistId,
-            PlaylistName = video.Playlist?.Name
+            PlaylistName = video.Playlist?.Name,
+            CloudePublicId = video.CloudPublicId,
         };
     }
 
@@ -265,7 +264,8 @@ public class VideoService : IVideoService
             OwnerId = channel.OwnerId,
             VideoCount = channel.Videos?.Count ?? 0,
             SubscriberCount = channel.Subscribers?.Count ?? 0,
-            PlaylistCount = channel.Playlists?.Count ?? 0
+            PlaylistCount = channel.Playlists?.Count ?? 0,
+            AvatarUrl = channel.AvatarUrl,
         };
     }
 

@@ -14,15 +14,23 @@ public class ChannelRepository(AppDbContext appDbContext) : IChannelRepository
         return channel;
     }
 
+    public async Task<bool> ExistsChannelByOwnerIdAsync(long userId)
+    {
+        var exist = await appDbContext.Channels
+            .AsNoTracking()
+            .AnyAsync(c => c.OwnerId == userId);
+        return exist;
+    }
+
     public IQueryable<Channel> GetAllAsync()
     {
         var channels = appDbContext.Channels;
         return channels;
     }
 
-    public Task<Channel?> GetByIdAsync(long id)
+    public async Task<Channel?> GetByIdAsync(long id)
     {
-        var channel = appDbContext.Channels
+        var channel = await appDbContext.Channels
             .Include(c => c.Videos)
             .ThenInclude(c => c.ViewHistories)
             .AsNoTracking()
@@ -30,9 +38,9 @@ public class ChannelRepository(AppDbContext appDbContext) : IChannelRepository
         return channel;
     }
 
-    public Task<Channel?> GetByOwnerIdAsync(long userId)
+    public async Task<Channel?> GetByOwnerIdAsync(long userId)
     {
-        var channel = appDbContext.Channels
+        var channel = await appDbContext.Channels
             .Include(ch => ch.Videos)
             .ThenInclude(v => v.ViewHistories)
             .Include(c => c.Subscribers)
@@ -41,9 +49,9 @@ public class ChannelRepository(AppDbContext appDbContext) : IChannelRepository
         return channel;
     }
 
-    public Task<bool> IsChannelNameTakenAsync(string name)
+    public async Task<bool> IsChannelNameTakenAsync(string name)
     {
-        var exists = appDbContext.Channels
+        var exists = await appDbContext.Channels
             .AsNoTracking()
             .AnyAsync(c => c.Name == name);
         return exists;

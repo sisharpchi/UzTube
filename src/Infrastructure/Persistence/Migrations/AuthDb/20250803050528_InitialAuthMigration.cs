@@ -4,10 +4,12 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace Infrastructure.Persistence.Migrations.AuthDb
 {
     /// <inheritdoc />
-    public partial class InitAuthDb : Migration
+    public partial class InitialAuthMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -37,6 +39,7 @@ namespace Infrastructure.Persistence.Migrations.AuthDb
                     PasswordHash = table.Column<string>(type: "text", nullable: false),
                     Salt = table.Column<string>(type: "text", nullable: false),
                     ProfileImageUrl = table.Column<string>(type: "text", nullable: true),
+                    ProfileCloudPublicId = table.Column<string>(type: "text", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     RoleId = table.Column<long>(type: "bigint", nullable: false),
                     ConfirmerId = table.Column<long>(type: "bigint", nullable: true)
@@ -95,6 +98,15 @@ namespace Infrastructure.Persistence.Migrations.AuthDb
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.InsertData(
+                table: "Roles",
+                columns: new[] { "Id", "Description", "Name" },
+                values: new object[,]
+                {
+                    { 1L, null, "User" },
+                    { 2L, null, "Admin" }
                 });
 
             migrationBuilder.CreateIndex(

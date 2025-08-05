@@ -5,7 +5,7 @@ using Domain.Entities;
 
 namespace Application.Services;
 
-public class LikeDislikeService(ILikeDislikeRepository likeDislikeRepository) : ILikeDislikeService
+public class LikeDislikeService(ILikeDislikeRepository likeDislikeRepository, IChannelRepository channelRepository) : ILikeDislikeService
 {
     public async Task<long> ToggleAsync(long userId, LikeDislikeCreateDto dto)
     {
@@ -63,5 +63,27 @@ public class LikeDislikeService(ILikeDislikeRepository likeDislikeRepository) : 
     {
         var existing = await likeDislikeRepository.GetByUserAndVideoIdAsync(userId, videoId);
         return existing is null ? null : existing.IsLike;
+    }
+
+    public async Task<int> CountAllLikesByChannelId(long userId)
+    {
+        var channel = await channelRepository.GetByOwnerIdAsync(userId);
+        if (channel is null)
+        {
+            throw new InvalidOperationException("Kanal topilmadi.");
+        }
+        var likesCount = await likeDislikeRepository.CountAllLikesByChannelId(userId, channel.Id);
+        return likesCount;
+    }
+
+    public async Task<int> CountAllDislikesByChannelId(long userId)
+    {
+        var channel = await channelRepository.GetByOwnerIdAsync(userId);
+        if (channel is null)
+        {
+            throw new InvalidOperationException("Kanal topilmadi.");
+        }
+        var dislikesCount = await likeDislikeRepository.CountAllDislikesByChannelId(userId, channel.Id);
+        return dislikesCount;
     }
 }
