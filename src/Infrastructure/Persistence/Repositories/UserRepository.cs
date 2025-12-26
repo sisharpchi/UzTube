@@ -55,6 +55,8 @@ public class UserRepository(AuthDbContext authDbContext) : IUserRepository
 
     public async Task UpdateAsync(User user)
     {
+        authDbContext.Attach(user);
+        authDbContext.Entry(user).State = EntityState.Modified;
         //authDbContext.Entry(user).State = EntityState.Modified;
         authDbContext.Update(user);
         await authDbContext.SaveChangesAsync();

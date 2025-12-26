@@ -14,5 +14,5 @@ public interface IAuthService
     Task<UserDto> GetMeAsync(long userId);
     Task EditMeAsync(long userId, string fullName);
 
-    Task<bool> ChangePasswordAsync(UserChangePasswordDto dto);
+    Task<bool> ChangePasswordAsync(UserChangePasswordDto dto, long userId);
 }

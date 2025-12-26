@@ -247,9 +247,37 @@ public class AuthService(IRoleRepository _roleRepo, IValidator<UserRegisterDto> 
         return true;
     }
 
-    public Task<bool> ChangePasswordAsync(UserChangePasswordDto dto)
+    public async Task<bool> ChangePasswordAsync(UserChangePasswordDto dto, long userId)
     {
-        throw new NotImplementedException();
+        var user = await _userRepo.GetByIdAsync(userId);
+        if (user == null) return false;
+
+        var result = PasswordHasher.Verify(dto.OldPassword, user.PasswordHash, user.Salt);
+        if (!result)
+        {
+            return false;
+        }
+        var newPasswordTuple = PasswordHasher.Hasher(dto.NewPassword);
+
+        var updatePass = new User()
+        {
+            Id = user.Id,
+            Email = user.Email,
+            FullName = user.FullName,
+            PasswordHash = newPasswordTuple.Hash,
+            Salt = newPasswordTuple.Salt,
+            Confirmer = user.Confirmer,
+            ConfirmerId = user.ConfirmerId,
+            CreatedAt = user.CreatedAt,
+            ProfileCloudPublicId = user.ProfileCloudPublicId,
+            ProfileImageUrl = user.ProfileImageUrl,
+            RefreshTokens = user.RefreshTokens,
+            Role = user.Role,
+            RoleId = user.RoleId
+        };
+
+        await _userRepo.UpdateAsync(updatePass);
+        return true;
     }
 
     public async Task<UserDto> GetMeAsync(long userId)

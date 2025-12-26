@@ -55,6 +55,20 @@ public static class AuthEndpoints
         })
         .WithName("LogOut");
 
+        userGroup.MapPut("/change-password",
+        async (HttpContext context, UserChangePasswordDto dto, IAuthService _service) =>
+        {
+            long userId = context.User.GetUserId();
+            var result = await _service.ChangePasswordAsync(dto, userId);
+
+            if (!result)
+                return Results.BadRequest(new { message = "Old password is incorrect." });
+
+            return Results.Ok(new { message = "Password changed successfully." });
+        })
+        .RequireAuthorization()
+        .WithName("ChangePassword");
+
         userGroup.MapGet("/profile",
         async (HttpContext context ,IAuthService _service) =>
         {
